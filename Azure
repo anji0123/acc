@@ -1,0 +1,169 @@
+✅ Azure Services Interview Questions (Top 25)
+🟢 Section 1: Azure Data Factory (ADF) (1–7)
+🔹 1. What is Azure Data Factory (ADF)?
+Theory: ADF is a cloud-based ETL/ELT service for orchestrating and automating data pipelines. Real-time POV: Interviewers ask: “How do you schedule and monitor pipelines?” Example:
+	• You used ADF to orchestrate ingestion from SQL → ADLS → Synapse.
+	• Triggered pipelines daily, logged row counts in control tables.
+🔹 2. What are ADF triggers?
+Theory: Triggers start pipelines (schedule, tumbling window, event-based). Real-time POV: “How would you handle late-arriving files?” Example: Event trigger on blob storage → pipeline starts when file lands.
+🔹 3. What is the difference between Copy Activity and Data Flow?
+Theory:
+	• Copy Activity → moves data.
+	• Data Flow → transforms data at scale. Real-time POV: “When do you use Data Flow vs Databricks?” Answer: Data Flow for light transformations, Databricks for heavy logic.
+🔹 4. How do you implement incremental loads in ADF?
+Theory: Use watermark columns (last_updated) and control tables. SQL Example:
+sql
+SELECT * FROM transactions WHERE last_updated > '2025-11-01';
+Real-time POV: “How do you avoid duplicates?” → Use dedup logic in sink.
+🔹 5. How do you handle schema drift in ADF?
+Theory: Enable schema drift in Data Flows. Real-time POV: “What if source adds a new column?” → Pipeline won’t break, but you must validate.
+🔹 6. How do you monitor ADF pipelines?
+Theory: Use Azure Monitor, log analytics, alerts. Real-time POV: “How do you know if a pipeline failed at 2 AM?” → Alerts + email notifications.
+🔹 7. How do you secure credentials in ADF?
+Theory: Use Azure Key Vault for secrets. Real-time POV: “How do you avoid hardcoding passwords?” → Linked services with Key Vault integration.
+🟠 Section 2: Azure Storage & Synapse (8–15)
+🔹 8. What is Azure Data Lake Storage (ADLS)?
+Theory: Scalable storage for structured/unstructured data. Real-time POV: “How do you organize layers?” → Bronze (raw), Silver (clean), Gold (aggregated).
+🔹 9. How do you secure ADLS?
+Theory: Use RBAC, ACLs, firewall rules. Real-time POV: “How do you give analysts access only to Gold layer?” → Assign role at folder level.
+🔹 10. What is Azure Synapse Analytics?
+Theory: Cloud DW for big data + analytics. Real-time POV: “How do you optimize queries?” → Partitioning, distribution, materialized views.
+🔹 11. What is PolyBase in Synapse?
+Theory: Allows querying external data directly. Real-time POV: “How do you query ADLS files without loading?” → Use PolyBase external tables.
+🔹 12. How do you implement partitioning in Synapse?
+SQL Example:
+sql
+CREATE TABLE fact_sales
+WITH (DISTRIBUTION = HASH(customer_id), PARTITION (sale_date RANGE RIGHT FOR VALUES ('2025-01-01','2025-02-01')))
+AS SELECT * FROM staging_sales;
+Real-time POV: “How do you speed up queries on time-series data?” → Partition by date.
+🔹 13. How do you integrate Power BI with Synapse?
+Theory: Direct query or import mode. Real-time POV: “How do you ensure row-level security?” → Define RLS in Synapse or Power BI.
+🔹 14. What is serverless SQL pool vs dedicated SQL pool?
+Theory:
+	• Serverless → pay-per-query, good for ad-hoc.
+	• Dedicated → reserved compute, good for heavy workloads. Real-time POV: “Which one for production dashboards?” → Dedicated.
+🔹 15. How do you handle data skew in Synapse?
+Theory: Skew happens when distribution keys aren’t balanced. Real-time POV: “What if one customer has 90% of data?” → Use round-robin distribution.
+🔵 Section 3: Azure Databricks & Real-Time (16–21)
+🔹 16. What is Azure Databricks?
+Theory: Apache Spark-based analytics platform for big data + ML. Real-time POV: “Why Databricks over ADF Data Flow?” → For heavy transformations, streaming, ML.
+🔹 17. How do you implement Delta Lake in Databricks?
+Theory: Delta Lake adds ACID transactions, schema enforcement, time travel. PySpark Example:
+python
+df.write.format("delta").mode("append").save("/mnt/delta/transactions")
+Real-time POV: “How do you handle late-arriving data?” → Use Delta Lake merges.
+🔹 18. How do you handle streaming in Databricks?
+Theory: Use Structured Streaming with checkpoints + watermarks. PySpark Example:
+python
+df.writeStream.format("delta").option("checkpointLocation","/chk").start("/mnt/delta/stream")
+Real-time POV: “How do you ensure exactly-once processing?” → Checkpointing.
+🔹 19. How do you integrate Databricks with ADF?
+Theory: ADF can trigger Databricks notebooks. Real-time POV: “How do you orchestrate PySpark jobs?” → ADF pipeline calls Databricks notebook.
+🔹 20. How do you optimize PySpark jobs in Databricks?
+Theory: Use partitioning, caching, broadcast joins. Real-time POV: “What if job takes 2 hours?” → Tune cluster size, repartition data.
+🔹 21. How do you handle schema evolution in Delta Lake?
+Theory: Enable mergeSchema option. PySpark Example:
+python
+df.write.option("mergeSchema","true").format("delta").save("/mnt/delta/transactions")
+🟣 Section 4: Security, Governance, and Real-Time Concepts (22–25)
+🔹 22. How do you secure pipelines end-to-end?
+Theory: Use Key Vault, RBAC, private endpoints. Real-time POV: “How do you prevent analysts from seeing raw PII?” → Mask data in Silver layer.
+🔹 23. What is Azure Event Grid?
+Theory: Event routing service for real-time triggers. Real-time POV: “How do you trigger pipeline when file lands?” → Event Grid → ADF trigger.
+🔹 24. How do you implement monitoring in Azure?
+Theory: Use Azure Monitor, Log Analytics, dashboards. Real-time POV: “How do you detect failed jobs?” → Alerts + logs.
+🔹 25. How do you handle cost optimization in Azure?
+Theory:
+	• Use serverless pools for ad-hoc queries.
+	• Auto-pause clusters in Databricks.
+	• Tiered storage in ADLS. Real-time POV: “How do you reduce Synapse cost?” → Scale down DWUs when idle.
+	
+	🔥 Ultimate Azure Scenario-Based Interview Questions for Banking Data Engineers
+	🟢 Azure Data Factory (ADF) — Orchestration & ETL
+	1. Your pipeline ingests 2M transactions/day from SQL Server and flat files. How do you design fault-tolerant ingestion in ADF?
+		Interviewer wants: Retry logic, error handling, logging, alerts.
+	2. How do you implement incremental loads from MySQL into ADLS using ADF?
+		Expect follow-up: “How do you track last run time?” → Control tables or watermark columns.
+	3. A file lands late in ADLS. Your Power BI dashboard misses refresh. How do you redesign the pipeline to handle late-arriving data?
+		Think: Event triggers, tumbling window, watermark logic.
+	4. Your ADF pipeline fails randomly once a week. How do you debug and monitor this in production?
+		Mention: Azure Monitor, activity run logs, retry policies, alerts.
+	5. How do you parameterize ADF pipelines for multiple source systems (SQL Server, MySQL, flat files)?
+		Interviewer wants: Dynamic datasets, linked services, expressions.
+	6. How do you handle schema drift when ingesting flat files from vendors?
+		Think: Enable schema drift in Data Flow, validate schema before load, quarantine mismatches.
+	7. How do you secure credentials for source databases in ADF?
+		Answer: Azure Key Vault integration with linked services.
+	8. Your team needs to reprocess failed transactions from yesterday. How do you design ADF for re-runs without duplication?
+		Use: Idempotent logic, MERGE, control table flags.
+	9. How do you orchestrate a pipeline that runs hourly, but skips if no new data is available?
+		Think: Lookup activity → If Condition → Copy activity.
+	10. How do you handle file format changes (CSV → Parquet) mid-month in ADF?
+		Mention: Dynamic file format handling, schema evolution, branching logic.
+	🟠 Azure Data Lake Storage (ADLS) — Layering & Governance
+	11. How do you organize ADLS Gen2 for banking data (Bronze, Silver, Gold)?
+		Interviewer wants: Folder structure, access control, naming conventions.
+	12. How do you enforce access control so analysts only see Gold layer?
+		Use: RBAC, ACLs, storage firewall, private endpoints.
+	13. How do you handle PII data in ADLS?
+		Think: Masking in Silver layer, encryption at rest, access segregation.
+	14. How do you manage retention and archival of old transaction data in ADLS?
+		Mention: Lifecycle policies, tiered storage (hot → cool → archive).
+	15. How do you validate file integrity before ingestion?
+		Use: Metadata checks, checksum validation, file size/date logic.
+	🔵 Azure Synapse Analytics — Warehousing & Reporting
+	16. How do you load cleaned data from ADLS into Synapse for Power BI reporting?
+		Mention: Copy activity, staging tables, partitioning.
+	17. How do you design fact and dimension tables for retail banking transactions?
+		Expect: Fact → transactions; Dimensions → customer, merchant, channel, time.
+	18. How do you implement SCD Type 2 in Synapse for customer address changes?
+		SQL logic with effective_date, end_date, current_flag.
+	19. Your Power BI report is slow. How do you optimize Synapse queries?
+		Use: Distribution keys, materialized views, indexing, partitioning.
+	20. How do you handle schema evolution in Synapse when source adds new columns?
+		Mention: External tables, dynamic views, schema validation.
+	21. How do you implement row-level security in Synapse for different business units?
+		Use: Security predicates, user roles, filtered views.
+	🟣 Azure Databricks — PySpark & Delta Lake
+	22. You use Databricks for cleaning 2M daily transactions. How do you optimize PySpark performance?
+		Mention: Caching, broadcast joins, partitioning, cluster tuning.
+	23. How do you implement Delta Lake for transaction history?
+		Use: MERGE INTO, time travel, schema enforcement.
+	24. How do you handle late-arriving data in Delta Lake?
+		Mention: Upserts using MERGE, watermark logic, deduplication.
+	25. How do you integrate Databricks with ADF for orchestration?
+		Answer: ADF notebook activity → pass parameters → monitor status.
+	26. How do you implement streaming ingestion for ATM transactions in Databricks?
+		Use: Structured Streaming, checkpointing, watermarking.
+	27. How do you handle schema drift in PySpark?
+		Mention: StructType validation, dynamic column mapping, error quarantine.
+	28. How do you write modular PySpark code for ETL?
+		Use: extract.py, transform.py, load.py, config-driven logic.
+	🔴 Security, Monitoring, Governance
+	29. How do you secure end-to-end data flow from source to Power BI?
+		Mention: Key Vault, RBAC, private endpoints, masking, encryption.
+	30. How do you monitor pipeline health across ADF, Databricks, Synapse?
+		Use: Azure Monitor, Log Analytics, custom dashboards, alerts.
+	31. How do you handle audit logging for ETL runs?
+		Insert into audit table: pipeline name, run time, row count, status.
+	32. How do you manage secrets and credentials across Azure services?
+		Use: Key Vault → linked services, Databricks secret scopes.
+	33. How do you ensure compliance with banking regulations (e.g., PCI, GDPR)?
+		Mention: Data masking, encryption, access control, audit trails.
+	🟡 Team & Ownership Scenarios
+	34. You’re part of a 5-member team. How do you manage pipeline ownership and handoffs?
+		Use: Git integration, naming conventions, documentation, alerts.
+	35. How do you onboard a new team member into your Azure ecosystem?
+		Mention: Access setup, walkthrough of ADLS layers, pipeline logic, notebooks.
+	36. How do you handle conflicting changes in ADF pipelines across team members?
+		Use: Git-based collaboration, branch strategy, pull requests.
+	37. How do you ensure consistency across multiple pipelines?
+		Use: Parameterization, reusable templates, shared config files.
+	38. How do you handle a production incident (e.g., pipeline failure, data mismatch)?
+		Mention: RCA process, rollback strategy, alerting, communication.
+	39. How do you track SLA compliance for dashboard refreshes?
+		Use: Audit logs, control tables, alerting on delay thresholds.
+	40. How do you handle versioning of data in ADLS or Delta Lake?
+		Use: Time travel in Delta, folder versioning in ADLS.
+	
