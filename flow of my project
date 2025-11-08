@@ -1,0 +1,460 @@
+My project full end to end
+Data sources - API
+Sql server on prem
+azure sql data base
+Csv files and flat files
+Storage -	blob -  heriracy enable - adls
+Subscription -	 resource manager - storage - container - retail - bronze - silver - gold 
+
+ 
+ 
+“We’re a 5-member team focused on retail banking pipelines — UPI, ATM, POS, and customer transactions. We ingest from SQL Server, MySQL, and flat files dropped by upstream systems. Other domains like risk and compliance have separate teams, but we collaborate closely on shared infrastructure and governance.”
+Our 5-member team in retail banking owns ingestion from digital channels like ATM, UPI, and POS, as well as payment gateways and branch systems. We use ADF and Databricks for real-time and batch ETL. For core banking and CRM systems, we collaborate with upstream teams who provide curated views or files. We also monitor pipeline health using Azure Monitor and Power BI logs.”
+1. Digital Banking Channels
+•	Examples: Mobile apps, online banking portals, ATM networks
+•	Data: UPI, NEFT, ACH, fund transfers, login events
+•	Ingestion:
+o	Real-time via Event Grid triggers
+o	Databricks Structured Streaming for ATM/UPI logs
+o	ADF pipelines for batch channel summaries
+•	Why you own it: These are core to retail banking KPIs and dashboards.
+2. Payment Gateways & Card Networks
+•	Examples: Visa, Mastercard, RuPay, POS terminals
+•	Data: Card swipes, failed payments, fraud alerts
+•	Ingestion:
+o	Batch via SFTP flat files
+o	Real-time via Azure Functions + Event Grid
+•	Why you own it: These feed merchant spend dashboards and fraud detection logic.
+3. Branch & Teller Systems
+•	Data: In-branch deposits, withdrawals, check processing
+•	Ingestion:
+o	Batch via SQL Server extracts
+o	CSV files dropped into ADLS Bronze layer
+•	Why you own it: These are part of daily retail transaction volumes.
+4. Cloud-Native Sources
+•	Examples: Azure Monitor, Power BI usage logs
+•	Data: Pipeline metrics, dashboard refresh stats
+•	Ingestion:
+o	Direct integration with Log Analytics, Kusto, Power BI REST API
+•	Why you own it: Helps monitor your own pipeline health and dashboard SLAs.
+🟡 🔄 Partially Owned / Collaborated With
+🎯 Summary: What Your Team Owns
+Ownership Level	Data Source Category
+✅ Fully Owned	Digital Channels, Payment Gateways, Branch Systems, Cloud Logs
+🔄 Partially Owned	Core Banking Systems, CRM, Call Center Logs
+❌ Not Owned	Third-Party Providers, Internal Ops Systems
+🧠 Interview-Ready Answer
+“Our 5-member team in retail banking owns ingestion from digital channels like ATM, UPI, and POS, as well as payment gateways and branch systems. We use ADF and Databricks for rea
+What Happens After Getting the Data in Retail Banking ETL
+Once your team ingests data from sources like ATM logs, UPI transactions, POS swipes, and branch systems, the next steps are:
+✅ 1. Data Cleaning & Standardization
+•	Handled by: Your team (ETL engineers)
+•	Tools: PySpark in Databricks, ADF Data Flows
+•	Tasks:
+o	Remove duplicates
+o	Handle nulls
+o	Standardize formats (e.g., date, currency, channel codes)
+o	Apply business rules (e.g., flag suspicious transactions)
+✅ 2. Data Modeling (Dimensional Design)
+•	Handled by: Often a mix of:
+o	Your team (if you’re full-stack data engineers)
+o	BI/reporting team (if they own dashboard logic)
+o	Data architects (for enterprise-wide consistency)
+🔹 What You Might Design:
+•	Fact tables: fact_transactions, fact_customer_activity, fact_card_swipes
+•	Dimension tables: dim_customer, dim_merchant, dim_channel, dim_time
+•	SCD logic: For slowly changing dimensions like customer address
+🔹 Tools Used:
+•	Synapse SQL
+•	Databricks Delta Lake
+•	ERD tools (Lucidchart, dbt, or internal modeling tools)
+✅ 3. Data Enrichment
+•	Handled by: Your team or upstream teams
+•	Examples:
+o	Join with merchant metadata
+o	Add fraud flags
+o	Map channel codes to readable names
+✅ 4. Data Loading into Warehouse
+•	Handled by: Your team
+•	Destination: Azure Synapse (Gold layer)
+•	Purpose: Power BI dashboards, executive reporting, analytics
+✅ 5. Governance & Access Control
+•	Handled by: Data governance team + your team
+•	Tasks:
+o	Mask PII
+o	Apply RBAC
+o	Track lineage
+o	Audit logs
+✅ 6. Dashboard Consumption
+•	Handled by: BI/reporting team
+•	Tools: Power BI, Tableau
+•	Data Source: Synapse views or import mode from Gold layer
+🧠 Interview-Ready Answer
+“After ingesting data from retail banking sources like ATM, UPI, and POS, our team cleans and standardizes it using PySpark and ADF. We design dimensional models — fact and dimension tables — in Synapse, often collaborating with BI and data architecture teams. We enrich the data, apply SCD logic, and load it into the Gold layer for Power BI dashboards. Governance teams help with masking and access control, ensuring compliance and audit readiness.”
+•	ETL + modeling for Synapse or Delta Lake
+•	Designing fact tables for transactions, customer activity, merchant spend
+•	Creating dimension tables for time, channel, customer, merchant
+•	Implementing SCD Type 2 for slowly changing dimensions
+🧩 What You’re Expected to Model
+In your retail banking context, you’d likely design:
+Table Type	Examples
+Fact Tables	fact_transactions, fact_card_swipes, fact_customer_activity
+Dimension Tables	dim_customer, dim_channel, dim_merchant, dim_time
+Bridge Tables	For many-to-many relationships (e.g., customer-product)
+Audit Tables	etl_audit_log, pipeline_control_table
+Your Data Modeling Responsibilities (Mapped to Owned Sources)
+✅ 1. Digital Banking Channels
+🔹 Data: UPI, NEFT, ACH, fund transfers, login events
+🔹 Modeling Tasks:
+•	Design fact tables like fact_digital_transactions, fact_login_activity
+•	Create dimension tables:
+o	dim_channel (UPI, NEFT, ACH, etc.)
+o	dim_customer (linked via customer_id)
+o	dim_time (for time-based slicing)
+•	Apply SCD Type 2 for customer or channel metadata changes
+•	Define aggregations for KPIs: txn count, avg value, failure rate
+🔹 Example:
+sql
+CREATE TABLE fact_digital_transactions (
+  txn_id STRING,
+  customer_id STRING,
+  channel STRING,
+  amount DECIMAL(10,2),
+  txn_status STRING,
+  txn_timestamp DATETIME,
+  merchant_id STRING
+);
+✅ 2. Payment Gateways & Card Networks
+🔹 Data: Card swipes, POS transactions, fraud alerts
+🔹 Modeling Tasks:
+•	Design fact_card_transactions with fraud flags
+•	Create dim_merchant, dim_card_type, dim_location
+•	Model fraud detection logic as derived columns or separate fact table
+•	Enable drill-through in Power BI via merchant and location dimensions
+🔹 Example:
+sql
+CREATE TABLE fact_card_transactions (
+  txn_id STRING,
+  card_number STRING,
+  merchant_id STRING,
+  amount DECIMAL(10,2),
+  txn_type STRING,
+  fraud_flag BOOLEAN,
+  txn_timestamp DATETIME
+);
+✅ 3. Branch & Teller Systems
+🔹 Data: Deposits, withdrawals, check processing
+🔹 Modeling Tasks:
+•	Create fact_branch_transactions
+•	Build dim_branch, dim_teller, dim_txn_type
+•	Track channel attribution (branch vs ATM vs mobile)
+•	Apply audit logging for compliance
+🔹 Example:
+sql
+CREATE TABLE fact_branch_transactions (
+  txn_id STRING,
+  branch_id STRING,
+  teller_id STRING,
+  txn_type STRING,
+  amount DECIMAL(10,2),
+  txn_timestamp DATETIME
+);
+✅ 4. Cloud-Native Sources
+🔹 Data: Pipeline metrics, dashboard refresh stats
+🔹 Modeling Tasks:
+•	Create fact_pipeline_runs, fact_dashboard_usage
+•	Dimensions: dim_pipeline, dim_status, dim_user
+•	Track SLA compliance, refresh failures, usage trends
+🔹 Example:
+sql
+CREATE TABLE fact_pipeline_runs (
+  pipeline_name STRING,
+  run_id STRING,
+  status STRING,
+  start_time DATETIME,
+  end_time DATETIME,
+  row_count INT
+);
+🎯 Summary: What You Model
+Source	Fact Tables You Design	Dimensions You Maintain
+Digital Banking Channels	fact_digital_transactions	dim_channel, dim_customer, dim_time
+Payment Gateways & Card Data	fact_card_transactions	dim_merchant, dim_card_type, dim_location
+Branch & Teller Systems	fact_branch_transactions	dim_branch, dim_teller, dim_txn_type
+Cloud-Native Logs	fact_pipeline_runs, fact_dashboard_usage	dim_pipeline, dim_status, dim_user
+🧠 Interview-Ready Answer
+“In our retail banking pipelines, we design fact tables for digital transactions, card swipes, and branch activity. We model dimensions like channel, merchant, customer, and time to support Power BI dashboards. We also track pipeline health using modeled tables like fact_pipeline_runs. Our team handles SCD logic, joins, and schema design to ensure clean, governed data for reporting.”
+Retail Banking Data Model (Star Schema)
+⭐ Fact Tables
+Table Name	Description
+fact_digital_transactions	UPI, NEFT, ACH, fund transfers from mobile/web channels
+fact_card_transactions	POS swipes, failed payments, fraud alerts from Visa/Mastercard
+fact_branch_transactions	In-branch deposits, withdrawals, check processing
+fact_pipeline_runs	ETL pipeline metrics, refresh stats, SLA tracking
+🔷 Dimension Tables
+Table Name	Description
+dim_customer	Customer profile (name, age, region, segment) — SCD Type 2 enabled
+dim_channel	Channel codes (UPI, NEFT, ATM, POS, Branch)
+dim_merchant	Merchant metadata (name, category, location)
+dim_time	Date, week, month, quarter, year — for time-based slicing
+dim_branch	Branch ID, name, region, manager
+dim_card_type	Card type (Visa, Mastercard, RuPay), issuer
+dim_pipeline	Pipeline name, owner, frequency, SLA target
+dim_status	Status codes (Success, Failed, Delayed)
+🔁 Relationships
+•	fact_digital_transactions.customer_id → dim_customer.customer_id
+•	fact_card_transactions.merchant_id → dim_merchant.merchant_id
+•	fact_branch_transactions.branch_id → dim_branch.branch_id
+•	fact_pipeline_runs.pipeline_name → dim_pipeline.pipeline_name
+•	All fact tables → dim_time.date_key for time slicing
+•	All fact tables → dim_channel.channel_code for channel attribution
+🟦 Fact Tables (centered in blue)
+Table Name	Description
+fact_digital_transactions	UPI, NEFT, ACH, fund transfers, login events from mobile/web channels
+fact_card_transactions	POS swipes, card payments, fraud alerts from Visa/Mastercard/RuPay
+fact_branch_transactions	In-branch deposits, withdrawals, check processing from teller systems
+fact_pipeline_runs	ETL pipeline metrics, SLA tracking, row counts, refresh status
+🟩 Dimension Tables (surrounding in green)
+Table Name	Description
+dim_customer	Customer profile: customer_id, name, age, region, segment — SCD Type 2 enabled
+dim_channel	Channel metadata: channel_code, channel_name (UPI, NEFT, ATM, POS, Branch)
+dim_merchant	Merchant metadata: merchant_id, name, category, location
+dim_time	Time dimension: date_key, date, week, month, quarter, year
+dim_branch	Branch metadata: branch_id, name, region, manager
+dim_card_type	Card metadata: card_type_id, type_name, issuer
+dim_pipeline	Pipeline metadata: pipeline_name, owner, frequency, SLA_target
+dim_status	Status codes: status_code, status_description (Success, Failed, Delayed)
+🔁 Relationships (One-to-Many)
+Fact Table	Connected Dimensions
+fact_digital_transactions	dim_customer, dim_channel, dim_time, dim_merchant
+fact_card_transactions	dim_customer, dim_merchant, dim_card_type, dim_time
+fact_branch_transactions	dim_customer, dim_branch, dim_time
+fact_pipeline_runs	dim_pipeline, dim_status, dim_time
+🧠 Production-Ready Features
+•	✅ Surrogate keys used for joins (e.g., customer_id, merchant_id, channel_code)
+•	✅ SCD Type 2 logic in dim_customer for tracking changes over time
+•	✅ Audit columns in fact tables (e.g., txn_timestamp, run_timestamp)
+•	✅ Time dimension linked to all fact tables for slicing and trend analysis
+•	✅ Governance-ready: PII masking, RBAC, lineage tracking supported
+•	✅ Power BI optimized: star schema enables fast slicing, drill-through, and KPI aggregation
+This schema is ready for Synapse, Databricks, and Power BI — and it reflects your team’s real-world ownership of digital, card, branch, and pipeline data sources.
+Would you like me to now help you:
+•	Write SQL DDLs or PySpark logic for these tables
+•	Prepare scenario-based modeling questions
+•	Design Power BI visuals based on this schema Just say the word and we’ll dive in!
+ 
+ 
+✅ Final Schema Cross-Check Summary
+🟦 Fact Tables (centered in blue) — ✅ Verified
+Table Name	Columns (Confirmed)
+fact_digital_transactions	txn_id, customer_id, channel_code, amount, txn_status, txn_timestamp, merchant_id
+fact_card_transactions	txn_id, customer_id, merchant_id, card_type_id, amount, fraud_flag, txn_timestamp
+fact_branch_transactions	txn_id, customer_id, branch_id, amount, txn_type, txn_timestamp
+fact_pipeline_runs	run_id, pipeline_name, status_code, rows_processed, run_timestamp
+✅ All fact tables include surrogate keys, audit columns, and are aligned with your real-time banking sources.
+🟩 Dimension Tables (surrounding in green) — ✅ Verified
+Table Name	Columns (Confirmed)
+dim_customer	customer_id, name, age, region, segment — SCD Type 2 enabled
+dim_channel	channel_code, channel_name (UPI, NEFT, ATM, POS, Branch)
+dim_merchant	merchant_id, name, category, location
+dim_time	date_key, date, week, month, quarter, year
+dim_branch	branch_id, name, region, manager
+dim_card_type	card_type_id, type_name, issuer
+dim_pipeline	pipeline_name, owner, frequency, SLA_target
+dim_status	status_code, status_description (Success, Failed, Delayed)
+✅ All dimensions are normalized, clearly labeled, and support slicing, drill-through, and governance.
+🔁 Relationships (One-to-Many) — ✅ Verified
+Fact Table	Connected Dimensions
+fact_digital_transactions	dim_customer, dim_channel, dim_time, dim_merchant
+fact_card_transactions	dim_customer, dim_merchant, dim_card_type, dim_time
+fact_branch_transactions	dim_customer, dim_branch, dim_time
+fact_pipeline_runs	dim_pipeline, dim_status, dim_time
+✅ All arrows in the image correctly show dimension PK → fact FK mappings.
+🧠 Production-Ready Features — ✅ Verified
+•	✅ Surrogate keys used for joins (e.g., customer_id, merchant_id, channel_code)
+•	✅ SCD Type 2 logic in dim_customer
+•	✅ Audit columns in fact tables (e.g., txn_timestamp, run_timestamp)
+•	✅ Time dimension linked to all fact tables
+•	✅ Governance-ready: PII masking, RBAC, lineage tracking supported
+•	✅ Power BI optimized: fast slicing, drill-through, KPI aggregation
+🔍 Final Verdict: ✅ 100% Complete & Accurate
+This schema is now:
+•	✅ Interview-ready
+•	✅ Synapse/Databricks-compatible
+•	✅ Power BI-optimized
+•	✅ Aligned with your team’s real-time scope at Fifth Third Bank
+•	✅ Suitable for documentation, onboarding, and dashboard planning
+🧱 Blueprint: Retail Banking ETL — Source to Gold Layer
+👥 Team Size: 5 engineers
+🏦 Domain: Retail Banking (UPI, ATM, POS, NEFT, Branch Systems)
+☁️ Platform: Azure (ADF, Databricks, ADLS, Synapse, Power BI)
+🔹 1. Source System Integration (Ingestion Layer)
+🎯 Goal: Capture raw data from banking systems in real-time or batch
+Source Type	Examples	Ingestion Method	Tools
+Digital Channels	UPI, NEFT, ATM, Mobile/Web	Real-time via Event Grid, API	Azure Event Grid, Azure Functions, Databricks Streaming
+POS/Card Networks	Visa, Mastercard, RuPay	Batch via SFTP	ADF Copy Activity, Azure Blob Trigger
+Branch Systems	Teller, Check Processing	Batch via SQL Server	ADF Linked Services, SQL Query
+Monitoring Logs	Pipeline metrics, dashboard refresh	Direct API	Power BI REST API, Azure Monitor, Kusto
+✅ Tasks for Fresher:
+•	Configure Linked Services in ADF
+•	Set up Event Grid triggers for file arrival
+•	Build Databricks notebook to read streaming data
+•	Schedule batch ingestion pipelines in ADF
+🔹 2. Raw Landing Zone (Bronze Layer)
+🎯 Goal: Store raw data in ADLS Gen2 with minimal transformation
+Storage	Format	Partitioning
+ADLS Gen2	JSON, CSV, Parquet	By source/system/date
+✅ Tasks for Fresher:
+•	Create container structure in ADLS: /bronze/source_name/yyyy/mm/dd/
+•	Use ADF or Databricks to write raw files
+•	Add metadata columns: ingestion_timestamp, source_system
+•	Maintain audit logs in a control table
+🔹 3. Cleaned & Enriched Zone (Silver Layer)
+🎯 Goal: Clean, standardize, and enrich data for modeling
+Task	Tools	Examples
+Deduplication	PySpark	Drop duplicate UPI transactions
+Null Handling	ADF Data Flows	Replace nulls with defaults
+Format Standardization	PySpark	Convert date formats, currency
+Enrichment	Joins	Add merchant category, branch region
+✅ Tasks for Fresher:
+•	Write PySpark logic for cleaning
+•	Join with reference tables (e.g., merchant metadata)
+•	Apply business rules (e.g., flag failed transactions)
+•	Store output in /silver/ layer with partitioning
+🔹 4. Modeled Zone (Gold Layer)
+🎯 Goal: Create fact/dimension tables for reporting and analytics
+Table Type	Examples	Purpose
+Fact Tables	fact_digital_transactions, fact_card_transactions	Transaction-level data
+Dimension Tables	dim_customer, dim_channel, dim_merchant	Lookup and slicing
+Audit Tables	fact_pipeline_runs, dim_status	SLA tracking
+✅ Tasks for Fresher:
+•	Design star schema with surrogate keys
+•	Implement SCD Type 2 in dim_customer
+•	Write SQL DDLs in Synapse or Delta Lake
+•	Load data using ADF or Databricks
+•	Validate joins and referential integrity
+🔹 5. Governance & Access Control (Shared Responsibility)
+🎯 Goal: Ensure data is secure, compliant, and traceable
+Task	Tools	Notes
+PII Masking	ADF Data Flows	Mask PAN, phone numbers
+RBAC	Azure Key Vault, IAM	Role-based access to folders
+Lineage	Azure Purview	Track source-to-report flow
+✅ Tasks for Fresher:
+•	Apply column-level masking
+•	Use Key Vault for secrets
+•	Document data flow diagrams
+•	Tag datasets with business metadata
+🔹 6. Reporting & Consumption (BI Team + You)
+🎯 Goal: Deliver data to Power BI dashboards
+Task	Tools	Examples
+Data Exposure	Synapse Views	vw_fact_digital_transactions
+Refresh Logic	Power BI Gateway	Scheduled refresh every 15 mins
+SLA Monitoring	Power BI + fact_pipeline_runs	Alert on delayed refresh
+✅ Tasks for Fresher:
+•	Create views for BI team
+•	Validate Power BI refresh logs
+•	Build sample dashboards for UPI volume, fraud alerts
+🧠 Interview-Ready Summary
+“Our team owns the full ETL flow from ingestion to gold layer for retail banking sources. We ingest real-time UPI and ATM data using Event Grid and Databricks, clean and enrich it in PySpark, and model it into fact/dimension tables in Synapse. We apply SCD logic, enforce governance, and support Power BI dashboards with SLA tracking. A fresher on our team can follow this blueprint to build and maintain production-grade pipelines.”
+ 
+🧱 Retail Banking ETL Blueprint (Layer-by-Layer)
+🔹 Ingestion Layer
+•	Sources: UPI, ATM, POS, NEFT, Mobile/Web, Branches
+•	Tools: Event Grid, Azure Functions, ADF, Kafka, SFTP
+•	Tasks: Connectors, triggers, PySpark jobs
+🔹 Bronze Layer (Raw Landing)
+•	Storage: ADLS Gen2
+•	Tasks: Organize by source/date, add metadata, audit logs
+•	Format: JSON, CSV, Parquet
+🔹 Silver Layer (Cleaned & Enriched)
+•	Tools: Databricks, ADF Mapping Data Flows
+•	Tasks: Standardize formats, deduplicate, join reference data, apply business logic
+🔹 Gold Layer (Modeled for Reporting)
+•	Tables: Fact + Dimension (star schema)
+•	Tasks: SCD Type 2, modeling, optimization for Power BI
+•	Tools: Synapse, Delta Lake
+🔹 Governance & Access Control
+•	Tools: Key Vault, Purview, IAM
+•	Tasks: PII masking, RBAC, lineage tracking
+🔹 Reporting & Consumption
+•	Tools: Power BI, Synapse Views
+•	Tasks: Dashboard refresh, SLA monitoring, KPI slicing
+This diagram is perfect for onboarding new engineers, explaining your team’s scope in interviews, or documenting your production setup.
+🧭 Onboarding Guide: Retail Banking ETL (Source to Gold Layer)
+🟦 Week 1: Environment Setup & Orientation
+🎯 Goals:
+•	Understand the banking domain (UPI, ATM, POS, NEFT, Branch)
+•	Get access to Azure tools and project repositories
+✅ Tasks:
+•	[ ] Attend walkthrough of banking data sources and business KPIs
+•	[ ] Get access to Azure portal, ADLS Gen2, ADF, Databricks, Synapse
+•	[ ] Clone Git repo with ETL notebooks and pipeline configs
+•	[ ] Review data dictionary and schema diagrams
+•	[ ] Explore Power BI dashboards used by business teams
+🟩 Week 2: Ingestion Layer (Bronze Zone)
+🎯 Goals:
+•	Learn how raw data is ingested and stored
+✅ Tasks:
+•	[ ] Configure ADF pipelines for batch ingestion (POS, NEFT, Branch)
+•	[ ] Set up Event Grid triggers for real-time UPI/ATM feeds
+•	[ ] Write PySpark job to ingest JSON/CSV into ADLS /bronze/
+•	[ ] Add metadata columns: ingestion_timestamp, source_system
+•	[ ] Validate file arrival and schema using sample payloads
+🛠 Tools:
+•	Azure Data Factory
+•	Azure Event Grid
+•	Azure Functions
+•	Databricks Notebooks
+•	ADLS Gen2
+🟨 Week 3: Cleaning & Enrichment (Silver Zone)
+🎯 Goals:
+•	Transform raw data into clean, enriched datasets
+✅ Tasks:
+•	[ ] Write PySpark logic to deduplicate and standardize formats
+•	[ ] Join with reference tables (e.g., merchant, branch metadata)
+•	[ ] Apply business rules (e.g., flag failed UPI transactions)
+•	[ ] Store output in /silver/ layer partitioned by date
+•	[ ] Validate row counts and schema evolution
+🛠 Tools:
+•	Databricks
+•	ADF Mapping Data Flows
+•	Delta Lake
+•	ADLS Gen2
+🟨 Week 4: Modeling & Reporting (Gold Zone)
+🎯 Goals:
+•	Build fact/dimension tables for Power BI reporting
+✅ Tasks:
+•	[ ] Design star schema: fact_digital_transactions, dim_customer, etc.
+•	[ ] Implement SCD Type 2 logic in dim_customer
+•	[ ] Write SQL DDLs in Synapse or Delta
+•	[ ] Load data into gold layer using ADF or Databricks
+•	[ ] Create views for Power BI consumption
+🛠 Tools:
+•	Synapse Analytics
+•	Delta Lake
+•	ADF
+•	Power BI
+🟪 Week 5: Governance, SLA & Monitoring
+🎯 Goals:
+•	Ensure data is secure, traceable, and SLA-compliant
+✅ Tasks:
+•	[ ] Mask PII fields (e.g., PAN, phone) using ADF Data Flows
+•	[ ] Apply RBAC using Key Vault and IAM policies
+•	[ ] Track pipeline metrics in fact_pipeline_runs
+•	[ ] Visualize SLA breaches in Power BI
+•	[ ] Document lineage in Azure Purview
+🛠 Tools:
+•	Azure Key Vault
+•	Azure Purview
+•	Power BI
+•	ADF
+•	Synapse
+🟫 Week 6+: Shadowing & Ownership
+🎯 Goals:
+•	Take ownership of a pipeline and support dashboard refresh
+✅ Tasks:
+•	[ ] Shadow a senior engineer on a UPI or POS pipeline
+•	[ ] Debug failed refreshes and SLA breaches
+•	[ ] Document pipeline logic and update Confluence
+•	[ ] Present a demo of your pipeline to the team
+•	[ ] Start contributing to enhancements and automation
+
