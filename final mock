@@ -1,0 +1,46 @@
+)
+🟢 Section 1: Python & Spark (8 Questions)
+1. How do you implement idempotent logic in PySpark for transaction ingestion?
+2. What’s the difference between map(), flatMap(), and reduce() in Spark? Give banking use cases.
+3. How do you handle schema drift in PySpark when ingesting vendor flat files?
+4. Write PySpark code to calculate moving average of transaction amount per customer.
+5. How do you optimize PySpark joins when one table is small (e.g., merchant dimension)?
+6. What’s the difference between RDD and DataFrame? Which one did you use in production and why?
+7. How do you implement SCD Type 2 in PySpark for customer address changes?
+8. How would you explain lazy evaluation in Spark to a junior teammate?
+🟠 Section 2: SQL & Data Warehousing (8 Questions)
+9. Write SQL to deduplicate transactions by txn_id, keeping the latest by timestamp.
+10. How do you design a star schema for retail banking transactions?
+11. What’s the difference between OLTP and OLAP? How does your pipeline support both?
+12. How do you implement incremental load using control tables?
+13. What are factless fact tables? Can you give a banking example?
+14. How do you handle schema evolution in Synapse when source systems change?
+15. What’s the difference between surrogate key and natural key? Which one do you prefer?
+16. How do you partition large fact tables in Synapse for performance?
+🔵 Section 3: Azure & Cloud Architecture (10 Questions)
+17. How do you orchestrate a multi-step ETL pipeline using ADF?
+18. How do you secure credentials across ADF, Databricks, and Synapse?
+19. What’s your approach to organizing ADLS layers (Bronze, Silver, Gold)?
+20. How do you handle late-arriving data in ADF pipelines?
+21. How do you monitor pipeline health and failures across Azure services?
+22. What’s the difference between serverless and dedicated SQL pools in Synapse?
+23. How do you implement real-time ingestion using Event Grid + Databricks?
+24. How do you optimize cost in Azure Databricks for daily batch jobs?
+25. How do you integrate Power BI with Synapse securely and efficiently?
+26. How do you handle schema drift in ADF Data Flows?
+🟣 Section 4: Power BI & Reporting (4 Questions)
+27. How do you implement row-level security in Power BI for branch managers?
+28. What KPIs do you track for retail banking dashboards?
+29. How do you handle refresh failures in Power BI linked to ADF pipelines?
+30. How do you simplify dashboards for executive stakeholders?
+🔴 Section 5: Behavioral (STAR Format, 10 Questions)
+31. Tell me about a time you resolved a critical pipeline failure under pressure.
+32. Describe a situation where you mentored a junior teammate on Spark or Azure.
+33. Share an example of how you improved performance or reduced cost in production.
+34. Tell me about a time you handled conflicting opinions in your team.
+35. Describe a time you helped onboard a new team member into your Azure ecosystem.
+36. Share a situation where you ensured compliance with banking regulations (e.g., GDPR, PCI).
+37. Tell me about a time you collaborated with business analysts to deliver new KPIs.
+38. Describe a time you handled stakeholder feedback and improved dashboard usability.
+39. Tell me about a time you scaled your pipeline for a new product or business line.
+40. Share a situation where you proactively prevented a failure or outage.
