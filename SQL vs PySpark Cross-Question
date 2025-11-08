@@ -1,0 +1,318 @@
+🔥 SQL vs PySpark Cross-Question Interview Guide (Top 20)
+🟢 1. Deduplicate transactions based on txn_id, keeping the latest by timestamp
+SQL:
+sql
+WITH ranked AS (
+  SELECT *, ROW_NUMBER() OVER (PARTITION BY txn_id ORDER BY timestamp DESC) AS rn
+  FROM transactions
+)
+SELECT * FROM ranked WHERE rn = 1;
+PySpark:
+python
+from pyspark.sql.window import Window
+from pyspark.sql.functions import row_number
+windowSpec = Window.partitionBy("txn_id").orderBy(df["timestamp"].desc())
+df = df.withColumn("rn", row_number().over(windowSpec)).filter("rn == 1")
+🧠 Trade-off: SQL is concise; PySpark gives more control for distributed execution.
+🟠 2. Calculate total transaction amount per customer
+SQL:
+sql
+SELECT customer_id, SUM(amount) AS total_spend
+FROM transactions
+GROUP BY customer_id;
+PySpark:
+python
+df.groupBy("customer_id").agg({"amount": "sum"})
+🧠 Trade-off: SQL is declarative; PySpark is flexible for chaining logic.
+🔵 3. Filter transactions above ₹10,000 and from UPI channel
+SQL:
+sql
+SELECT * FROM transactions
+WHERE amount > 10000 AND channel = 'UPI';
+PySpark:
+python
+df.filter((df["amount"] > 10000) & (df["channel"] == "UPI"))
+🧠 Trade-off: PySpark allows dynamic filters and chaining.
+🟣 4. Join transactions with merchant data
+SQL:
+sql
+SELECT t.*, m.merchant_name
+FROM transactions t
+JOIN merchants m ON t.merchant_id = m.merchant_id;
+PySpark:
+python
+df_txn.join(df_merchant, "merchant_id", "inner")
+🧠 Trade-off: PySpark can optimize joins with broadcast.
+🔴 5. Detect outliers using mean + 3stddev*
+SQL:
+sql
+SELECT * FROM transactions
+WHERE amount > (SELECT AVG(amount) + 3 * STDDEV(amount) FROM transactions);
+PySpark:
+python
+from pyspark.sql.functions import mean, stddev
+stats = df.select(mean("amount"), stddev("amount")).collect()
+threshold = stats[0][0] + 3 * stats[0][1]
+df_outliers = df.filter(df["amount"] > threshold)
+🧠 Trade-off: PySpark gives more control over intermediate stats.
+🟢 6. Implement SCD Type 2 for customer address changes
+SQL:
+sql
+-- Insert new version
+INSERT INTO dim_customer (...) VALUES (..., CURRENT_DATE, '9999-12-31');
+-- Update old version
+UPDATE dim_customer SET end_date = CURRENT_DATE WHERE ...;
+PySpark:
+python
+df_new = df_source.join(df_dim, "customer_id", "left_anti")
+df_new = df_new.withColumn("effective_date", current_date()).withColumn("end_date", lit("9999-12-31"))
+🧠 Trade-off: SQL is easier for small updates; PySpark scales better for bulk changes.
+🟠 7. Calculate moving average of transaction amount
+SQL:
+sql
+SELECT customer_id, amount,
+  AVG(amount) OVER (PARTITION BY customer_id ORDER BY txn_date ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS moving_avg
+FROM transactions;
+PySpark:
+python
+windowSpec = Window.partitionBy("customer_id").orderBy("txn_date").rowsBetween(-2, 0)
+df = df.withColumn("moving_avg", avg("amount").over(windowSpec))
+🧠 Trade-off: PySpark gives more flexibility for window tuning.
+🔵 8. Count transactions per channel per day
+SQL:
+sql
+SELECT channel, txn_date, COUNT(*) AS txn_count
+FROM transactions
+GROUP BY channel, txn_date;
+PySpark:
+python
+df.groupBy("channel", "txn_date").count()
+🧠 Trade-off: PySpark is better for chaining with other aggregations.
+🟣 9. Implement audit logging after ETL run
+SQL:
+sql
+INSERT INTO audit_log (pipeline_name, run_time, row_count)
+VALUES ('txn_pipeline', CURRENT_TIMESTAMP, 100000);
+PySpark:
+python
+audit = spark.createDataFrame([("txn_pipeline", datetime.now(), df.count())], ["pipeline", "run_time", "row_count"])
+audit.write.mode("append").saveAsTable("audit_log")
+🧠 Trade-off: PySpark allows dynamic logging across steps.
+🔴 10. Filter transactions from last 7 days
+SQL:
+sql
+SELECT * FROM transactions
+WHERE txn_date >= CURRENT_DATE - INTERVAL '7' DAY;
+PySpark:
+python
+from pyspark.sql.functions import current_date, date_sub
+df.filter(df["txn_date"] >= date_sub(current_date(), 7))
+🧠 Trade-off: PySpark handles timezone logic better in distributed jobs.
+🟢 11. Find top 5 merchants by transaction volume
+SQL:
+sql
+SELECT merchant_id, SUM(amount) AS total
+FROM transactions
+GROUP BY merchant_id
+ORDER BY total DESC
+LIMIT 5;
+PySpark:
+python
+df.groupBy("merchant_id").agg({"amount": "sum"}).orderBy("sum(amount)", ascending=False).limit(5)
+🟠 12. Calculate churn rate between two months
+SQL:
+sql
+WITH active_last_month AS (...), active_this_month AS (...)
+SELECT COUNT(*) FROM active_last_month
+WHERE user_id NOT IN (SELECT user_id FROM active_this_month);
+PySpark:
+python
+df1 = df.filter(month(df["login_date"]) == 10).select("user_id").distinct()
+df2 = df.filter(month(df["login_date"]) == 11).select("user_id").distinct()
+df_churned = df1.join(df2, "user_id", "left_anti")
+🔵 13. Flatten nested JSON column
+SQL (PostgreSQL):
+sql
+SELECT user_id, json_data->>'action' AS action FROM users;
+PySpark:
+python
+from pyspark.sql.functions import from_json, col
+schema = StructType([...])
+df = df.withColumn("parsed", from_json("json_data", schema)).select("user_id", "parsed.action")
+🟣 14. Merge new transactions into Delta Lake table
+SQL (conceptual):
+sql
+MERGE INTO target USING source ON txn_id
+WHEN MATCHED THEN UPDATE ...
+WHEN NOT MATCHED THEN INSERT ...
+PySpark:
+python
+spark.sql("""
+MERGE INTO delta.transactions t
+USING staging s
+ON t.txn_id = s.txn_id
+WHEN MATCHED THEN UPDATE SET ...
+WHEN NOT MATCHED THEN INSERT ...
+""")
+🔴 15. Calculate percentage of UPI transactions
+SQL:
+sql
+SELECT COUNT(*) FILTER (WHERE channel = 'UPI') * 100.0 / COUNT(*) AS upi_pct
+FROM transactions;
+PySpark:
+python
+upi_count = df.filter(df["channel"] == "UPI").count()
+total_count = df.count()
+upi_pct = upi_count * 100.0 / total_count
+🟢 16. Validate schema before ingestion
+SQL:
+sql
+SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'transactions';
+PySpark:
+python
+expected = {"txn_id", "amount", "channel"}
+missing = expected - set(df.columns)
+🟠 17. Remove duplicate rows from a staging table
+SQL:
+sql
+DELETE FROM staging
+WHERE txn_id IN (
+  SELECT txn_id FROM staging
+  GROUP BY txn_id HAVING COUNT(*) > 1
+);
+PySpark:
+python
+df = df.dropDuplicates(["txn_id"])
+🔵 18. Calculate average transaction amount per channel
+SQL:
+sql
+SELECT channel, AVG(amount) FROM transactions GROUP BY channel;
+PySpark:
+python
+df.groupBy("channel").agg({"amount": "avg"})
+🟣 19. Filter transactions with invalid merchant_id
+SQL:
+sql
+SELECT * FROM transactions WHERE merchant_id IS NULL OR merchant_id NOT IN (SELECT merchant_id FROM merchants);
+**PySpark:
+dont stop
+You got it, Anji 💪 — let’s continue with the final stretch of your SQL vs PySpark Cross-Question Interview Set, picking up from Question 19 onward. These remaining questions will cover data validation, time-based filtering, ranking, schema checks, and performance tuning, all mapped to real-time banking use cases.
+🔴 19. Filter transactions with invalid merchant_id
+SQL:
+sql
+SELECT * FROM transactions
+WHERE merchant_id IS NULL
+   OR merchant_id NOT IN (SELECT merchant_id FROM merchants);
+PySpark:
+python
+df_invalid = df_txn.join(df_merchant, "merchant_id", "left_anti")
+🧠 Trade-off: PySpark’s left_anti join is more scalable for large datasets.
+🟢 20. Rank customers by total spend
+SQL:
+sql
+SELECT customer_id, SUM(amount) AS total_spend,
+       RANK() OVER (ORDER BY SUM(amount) DESC) AS rank
+FROM transactions
+GROUP BY customer_id;
+PySpark:
+python
+from pyspark.sql.window import Window
+from pyspark.sql.functions import sum, rank
+df_agg = df.groupBy("customer_id").agg(sum("amount").alias("total_spend"))
+windowSpec = Window.orderBy(df_agg["total_spend"].desc())
+df_ranked = df_agg.withColumn("rank", rank().over(windowSpec))
+🧠 Trade-off: PySpark gives more control over window specs and chaining.
+🟠 21. Validate column presence before processing
+SQL:
+sql
+SELECT column_name FROM information_schema.columns
+WHERE table_name = 'transactions';
+PySpark:
+python
+required = {"txn_id", "amount", "channel"}
+missing = required - set(df.columns)
+if missing:
+    raise ValueError(f"Missing columns: {missing}")
+🧠 Trade-off: PySpark allows dynamic schema enforcement in pipelines.
+🔵 22. Calculate daily transaction volume trend
+SQL:
+sql
+SELECT txn_date, COUNT(*) AS txn_count
+FROM transactions
+GROUP BY txn_date
+ORDER BY txn_date;
+PySpark:
+python
+df.groupBy("txn_date").count().orderBy("txn_date")
+🧠 Trade-off: PySpark is better for chaining with other time-based logic.
+🟣 23. Identify top 3 transaction channels per day
+SQL:
+sql
+SELECT * FROM (
+  SELECT channel, txn_date, COUNT(*) AS txn_count,
+         RANK() OVER (PARTITION BY txn_date ORDER BY COUNT(*) DESC) AS rnk
+  FROM transactions
+  GROUP BY channel, txn_date
+) WHERE rnk <= 3;
+PySpark:
+python
+from pyspark.sql.functions import count
+windowSpec = Window.partitionBy("txn_date").orderBy(count("channel").desc())
+df_ranked = df.groupBy("channel", "txn_date").count()
+df_top3 = df_ranked.withColumn("rnk", rank().over(windowSpec)).filter("rnk <= 3")
+🧠 Trade-off: PySpark gives flexibility for dynamic ranking logic.
+🔴 24. Calculate percentage contribution of each channel
+SQL:
+sql
+SELECT channel,
+       COUNT(*) * 100.0 / (SELECT COUNT(*) FROM transactions) AS pct
+FROM transactions
+GROUP BY channel;
+PySpark:
+python
+total = df.count()
+df_pct = df.groupBy("channel").count().withColumn("pct", (col("count") * 100.0) / total)
+🧠 Trade-off: PySpark allows chaining with other metrics.
+🟢 25. Implement control table logic for incremental loads
+SQL:
+sql
+SELECT * FROM transactions
+WHERE last_updated > (SELECT last_run_time FROM control_table WHERE pipeline_name = 'txn_pipeline');
+PySpark:
+python
+last_run = spark.sql("SELECT last_run_time FROM control_table WHERE pipeline_name = 'txn_pipeline'").collect()[0][0]
+df_new = df.filter(df["last_updated"] > last_run)
+🧠 Trade-off: PySpark integrates well with dynamic control logic.
+🟠 26. Compare performance: SQL vs PySpark for 10M rows
+Interviewer POV:
+	• SQL is faster for small-medium datasets with indexes.
+	• PySpark scales better for distributed processing, especially with joins and aggregations.
+🧠 Your answer: “We use PySpark in Databricks for 2M+ daily transactions because it handles partitioning, caching, and parallelism better than SQL Server for our volume.”
+🔵 27. Explain when you prefer SQL over PySpark
+Answer:
+	• SQL: quick ad-hoc queries, small datasets, reporting views
+	• PySpark: heavy transformations, joins, streaming, schema drift handling
+🧠 Real-time POV: You use SQL in Synapse for Power BI views, PySpark for Silver layer cleaning and Gold layer aggregations.
+🟣 28. How do you debug logic differences between SQL and PySpark outputs?
+Answer:
+	• Compare row counts
+	• Validate filters and joins
+	• Use .explain() in PySpark and execution plans in SQL
+	• Log intermediate outputs
+🔴 29. How do you ensure consistency between SQL and PySpark pipelines?
+Answer:
+	• Use shared config files
+	• Validate schema alignment
+	• Compare aggregates across layers
+	• Use audit logs and reconciliation scripts
+🟢 30. How do you explain PySpark logic to a SQL-only stakeholder?
+Answer: Translate PySpark steps into SQL equivalents:
+	• filter() → WHERE
+	• groupBy().agg() → GROUP BY
+	• join() → JOIN Use visuals and annotated notebooks.
+🎯 Final Summary
+✅ You now have 30 SQL vs PySpark cross-questions that:
+	• Show your ability to solve problems in both languages
+	• Demonstrate real-time banking use cases
+	• Prepare you for trade-off discussions and design decisions
+	• Help you explain your logic to both technical and business stakeholders
