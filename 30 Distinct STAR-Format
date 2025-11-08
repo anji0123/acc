@@ -1,0 +1,162 @@
+30 Distinct STAR-Format Behavioral + Scenario-Based Answers
+🟢 Category 1: Incident & Problem-Solving (1–6)
+1. Critical Pipeline Failure at Month-End
+	• Situation: Month-end ETL pipeline failed, blocking dashboards for executives.
+	• Task: Restore service quickly.
+	• Action: Identified schema drift in vendor file, applied quick fix in Databricks, re-ran pipeline.
+	• Result: Dashboard delivered same day, SLA met, executives praised responsiveness.
+2. Handling Late-Arriving ATM Files
+	• Situation: ATM transaction files arrived hours late.
+	• Task: Ensure dashboards still refreshed.
+	• Action: Added tumbling window triggers in ADF, incremental loads with watermark logic.
+	• Result: Dashboards refreshed with complete data, no gaps.
+3. Unexpected Surge in Transaction Volume
+	• Situation: Transactions spiked from 2M to 3.5M during festival season.
+	• Task: Keep pipeline stable.
+	• Action: Increased Databricks cluster size, optimized joins, repartitioned data.
+	• Result: Pipeline completed within SLA, dashboards refreshed on time.
+4. Corrupted Source File
+	• Situation: Vendor file corrupted mid-ingestion.
+	• Task: Prevent pipeline crash.
+	• Action: Added checksum validation, quarantined bad file, re-ingested from backup.
+	• Result: Pipeline continued smoothly, reduced downtime by 90%.
+5. Power BI Refresh Failure
+	• Situation: Power BI dashboard failed to refresh overnight.
+	• Task: Ensure executives had data by morning.
+	• Action: Triggered refresh via REST API from ADF, validated row counts.
+	• Result: Dashboard ready by 8 AM, SLA met.
+6. Production Outage Communication
+	• Situation: Pipeline outage impacted dashboards.
+	• Task: Communicate effectively.
+	• Action: Sent RCA report to stakeholders, explained fix, set preventive measures.
+	• Result: Stakeholders trusted team more, reduced escalations.
+🟠 Category 2: Optimization & Innovation (7–12)
+7. Reducing Databricks Costs
+	• Situation: Databricks costs rising due to idle clusters.
+	• Task: Optimize spend.
+	• Action: Implemented auto-pause clusters, optimized partitioning, used spot instances.
+	• Result: Monthly costs reduced by 20%.
+8. Improving Synapse Query Performance
+	• Situation: Power BI dashboards were slow.
+	• Task: Optimize queries.
+	• Action: Partitioned fact tables, created materialized views, indexed keys.
+	• Result: Query time reduced by 40%, dashboards loaded faster.
+9. Automating Error Notifications
+	• Situation: Failures weren’t noticed until analysts complained.
+	• Task: Improve monitoring.
+	• Action: Integrated ADF with Azure Monitor, set up email alerts.
+	• Result: Failures detected instantly, downtime reduced by 80%.
+10. Introducing Audit Framework
+	• Situation: Manual reconciliation of row counts was error-prone.
+	• Task: Automate validation.
+	• Action: Built PySpark audit framework logging row counts, schema checks, null checks.
+	• Result: Reduced manual effort by 30%, improved trust in data.
+11. Schema Evolution Handling
+	• Situation: Vendor added new columns mid-month.
+	• Task: Adapt pipeline.
+	• Action: Enabled schema evolution in Delta Lake, validated new fields.
+	• Result: Pipeline continued without break, new data available seamlessly.
+12. Fraud Detection Innovation
+	• Situation: Needed to flag suspicious transactions.
+	• Task: Implement anomaly detection.
+	• Action: Used PySpark to detect outliers (mean + 3*stddev), flagged results.
+	• Result: Fraud detection improved, flagged 5% anomalies.
+🔵 Category 3: Teamwork & Leadership (13–18)
+13. Conflict Resolution in Team
+	• Situation: Two teammates disagreed on incremental load logic.
+	• Task: Align team.
+	• Action: Compared SQL vs PySpark approaches, facilitated discussion, chose Delta Lake merge.
+	• Result: Team agreed, duplication reduced, load time improved by 25%.
+14. Mentoring Junior Engineer
+	• Situation: New teammate struggled with PySpark joins.
+	• Task: Help them ramp up.
+	• Action: Conducted whiteboard session, shared reusable notebook templates.
+	• Result: They became independent within 2 weeks, reducing bottlenecks.
+15. Team Coordination
+	• Situation: Team of 5 needed coordination for parallel pipelines.
+	• Task: Ensure smooth delivery.
+	• Action: Assigned ownership per pipeline, set up daily stand-ups, tracked progress.
+	• Result: All pipelines delivered on time, improved accountability.
+16. Knowledge Sharing
+	• Situation: Team lacked documentation for pipelines.
+	• Task: Improve knowledge transfer.
+	• Action: Created wiki with pipeline diagrams, common errors, fixes.
+	• Result: Reduced onboarding time by 50%, improved collaboration.
+17. Onboarding New Member
+	• Situation: New hire joined team.
+	• Task: Help them ramp up quickly.
+	• Action: Walked them through ADLS layers, ADF pipeline structure, Databricks notebooks.
+	• Result: They became productive in 2 weeks.
+18. Cross-Functional Collaboration
+	• Situation: Business analysts requested new KPIs.
+	• Task: Integrate into pipeline.
+	• Action: Collaborated with analysts, defined rules, implemented in PySpark.
+	• Result: KPIs added in 1 week, dashboards aligned with business needs.
+🟣 Category 4: Stakeholder & Compliance (19–24)
+19. Executive Dashboard Delivery
+	• Situation: Executives requested fraud KPIs in 48 hours.
+	• Task: Deliver quickly.
+	• Action: Built anomaly detection in PySpark, exposed results via Synapse.
+	• Result: Dashboard delivered in 2 days, praised by leadership.
+20. Simplifying Dashboards
+	• Situation: Executives found dashboards too complex.
+	• Task: Simplify visuals.
+	• Action: Replaced charts with KPIs, added drill-through pages.
+	• Result: Dashboard adoption increased significantly.
+21. Ensuring GDPR Compliance
+	• Situation: Retail banking data included PII.
+	• Task: Protect sensitive data.
+	• Action: Masked PII in Silver layer, encrypted ADLS folders, applied RBAC.
+	• Result: Compliance achieved, passed audit.
+22. Audit Requirement
+	• Situation: Internal audit required transaction lineage.
+	• Task: Provide traceability.
+	• Action: Implemented audit logging in PySpark, tracked row counts and timestamps.
+	• Result: Passed audit smoothly, improved compliance confidence.
+23. Stakeholder Feedback
+	• Situation: Analysts wanted dashboards simplified.
+	• Task: Adjust visuals.
+	• Action: Replaced complex visuals with KPIs, added drill-through.
+	• Result: Dashboard adoption increased, feedback improved.
+24. SLA Compliance
+	• Situation: SLA required dashboards by 8 AM daily.
+	• Task: Guarantee delivery.
+	• Action: Scheduled ADF pipelines with buffer, added alerts for delays.
+	• Result: SLA met consistently, improved trust.
+🔴 Category 5: Growth & Strategic Impact (25–30)
+25. Business Continuity
+	• Situation: Source DB went down during ingestion.
+	• Task: Keep pipeline running.
+	• Action: Switched to backup DB, re-ran pipeline.
+	• Result: No data loss, dashboards delivered.
+26. Multi-Environment Deployment
+	• Situation: Needed dev, test, prod pipelines.
+	• Task: Ensure smooth deployment.
+	• Action: Parameterized ADF pipelines, used deployment pipelines in Power BI.
+	• Result: Reduced errors, consistent across environments.
+27. Driving Business KPIs
+	• Situation: Executives wanted customer segmentation KPIs.
+	• Task: Deliver insights.
+	• Action: Built PySpark logic for age/region segmentation, exposed via Synapse.
+	• Result: Helped business target campaigns, improved engagement by 15%.
+28. Incident Root Cause Analysis
+	• Situation: Frequent mismatches between source and warehouse.
+	• Task: Identify root cause.
+	• Action: Added validation checks (row counts, schema drift, nulls).
+	• Result: Reduced mismatches by 25%, improved trust in dashboards.
+29. Driving Innovation in ETL
+	• Situation: Manual monitoring slowed team.
+	• Task:
+dont stop
+You got it, Anji 👊 — let’s complete your final set of 30 distinct STAR-format behavioral + scenario-based answers, continuing from where we left off at #29. These are all mapped to real-world banking data engineering, and each one is unique, covering a different angle of your work at Fifth Third Bank.
+🔴 Category 5: Growth & Strategic Impact (continued)
+🔹 29. Driving Innovation in ETL Monitoring
+	• Situation: Manual monitoring slowed down the team and led to missed failures.
+	• Task: Improve visibility and reduce manual effort.
+	• Action: Integrated ADF pipeline status with Azure Monitor, created a dashboard showing pipeline health and row counts.
+	• Result: Monitoring became proactive, reduced manual checks by 80%, improved SLA adherence.
+🔹 30. Scaling ETL for New Business Line
+	• Situation: Retail banking added a new product line (digital wallets).
+	• Task: Extend ETL pipelines to support new data source.
+	• Action: Designed new ingestion flow using ADF and Databricks, created new dimension tables in Synapse, updated Power BI dashboards.
+	• Result: Digital wallet data integrated within 5 days, enabling reporting for product launch.
