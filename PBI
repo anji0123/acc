@@ -1,0 +1,106 @@
+🔥 Power BI Interview Questions for Azure Data Engineers (Banking-Focused)
+🟢 Section 1: Dashboard Design & Real-Time Scenarios
+🔹 1. How do you design a dashboard for banking transactions?
+Theory: Use KPIs like total spend, transaction count, channel distribution, fraud flags. Real-time POV: You built dashboards showing daily UPI vs ATM volumes, merchant-wise spend, and customer segmentation.
+🔹 2. How do you handle late-arriving data in Power BI?
+Answer: Use incremental refresh with a buffer window. Follow-up: “How do you ensure dashboard doesn’t show partial data?” → Use control flags or refresh indicators.
+🔹 3. How do you implement row-level security (RLS)?
+Theory: Restrict data based on user roles. Example:
+DAX
+[Region] = USERPRINCIPALNAME()
+Real-time POV: Used RLS to restrict branch managers to their own region’s data.
+🔹 4. How do you connect Power BI to Synapse?
+Options:
+	• DirectQuery for real-time
+	• Import for performance Real-time POV: You used DirectQuery for dashboards refreshed hourly from Synapse.
+🔹 5. How do you optimize dashboard performance?
+Checklist:
+	• Use star schema
+	• Avoid complex DAX in visuals
+	• Pre-aggregate in Synapse
+	• Use import mode for heavy visuals
+🟠 Section 2: DAX & Modeling Logic
+🔹 6. What is the difference between CALCULATE() and FILTER()?
+Theory:
+	• CALCULATE() changes context
+	• FILTER() returns a table Example:
+DAX
+CALCULATE(SUM([Amount]), FILTER(Transactions, Transactions[Channel] = "UPI"))
+🔹 7. How do you calculate year-over-year growth?
+Code:
+DAX
+YoY = 
+DIVIDE(
+    [This Year] - [Last Year],
+    [Last Year]
+)
+🔹 8. How do you create a dynamic measure based on slicer selection?
+Code:
+DAX
+SelectedMetric = 
+SWITCH(
+    SELECTEDVALUE(Metric[Name]),
+    "Total Spend", SUM(Transactions[Amount]),
+    "Txn Count", COUNT(Transactions[TxnID])
+)
+🔹 9. How do you calculate running total?
+Code:
+DAX
+RunningTotal = 
+CALCULATE(
+    SUM(Transactions[Amount]),
+    FILTER(
+        ALLSELECTED(Transactions),
+        Transactions[Date] <= MAX(Transactions[Date])
+    )
+)
+🔹 10. How do you handle missing values in visuals?
+Answer: Use IF(ISBLANK()) logic or replace with 0 in DAX.
+🔵 Section 3: Integration with Azure Services
+🔹 11. How do you automate Power BI refresh after ADF pipeline completes?
+Answer: Use Power BI REST API triggered from ADF Web activity.
+🔹 12. How do you handle schema changes in Synapse affecting Power BI?
+Answer: Use views in Synapse to abstract schema. Real-time POV: You created stable views for Power BI to avoid breaking reports.
+🔹 13. How do you manage versioning of dashboards?
+Answer: Use Power BI workspace versioning, Git integration, and naming conventions.
+🔹 14. How do you restrict access to sensitive visuals?
+Answer: Use RLS + workspace permissions + hidden pages.
+🔹 15. How do you handle multiple environments (dev, test, prod)?
+Answer: Use parameterized data sources and deployment pipelines.
+🟣 Section 4: Banking-Specific KPIs & Scenarios
+🔹 16. What KPIs do you track for retail banking?
+Examples:
+	• Total transactions
+	• Average transaction value
+	• Channel-wise distribution (UPI, ATM, POS)
+	• Merchant-wise spend
+	• Fraud detection flags
+	• Customer segmentation (age, region, activity)
+🔹 17. How do you visualize fraud patterns?
+Answer: Use heatmaps, anomaly flags, and trend lines. Real-time POV: You flagged transactions > ₹1L via ATM in low-activity regions.
+🔹 18. How do you handle time intelligence (month-to-date, quarter-to-date)?
+Code:
+DAX
+MTD = TOTALMTD(SUM(Transactions[Amount]), Transactions[Date])
+🔹 19. How do you create drill-through reports?
+Answer: Enable drill-through pages with filters like customer ID or merchant name.
+🔹 20. How do you handle dashboard refresh failures?
+Answer: Set up alerts, retry logic, and fallback visuals (e.g., “Last successful refresh:…”)
+🔴 Section 5: Governance, Collaboration, and Publishing
+🔹 21. How do you manage access for different roles (analysts, managers, execs)?
+Answer: Use workspace roles + RLS + app publishing.
+🔹 22. How do you document dashboard logic for your team?
+Answer: Use Power BI comments, external documentation, and naming conventions.
+🔹 23. How do you handle feedback and dashboard changes?
+Answer: Use version control, feedback loops, and change logs.
+🔹 24. How do you publish dashboards securely to external users?
+Answer: Use Power BI Embedded or secure app sharing with Azure AD.
+🔹 25. How do you ensure dashboards meet SLA for refresh and accuracy?
+Answer: Track refresh logs, audit data quality, and validate KPIs against source.
+🎯 Summary
+✅ You now have 25 Power BI interview questions covering:
+	• Dashboard design for banking KPIs
+	• DAX logic and modeling
+	• Integration with Synapse, ADF, ADLS
+	• Governance, refresh strategy, and real-time scenarios
+These are interviewer-grade questions that test your ability to build, optimize, and manage enterprise dashboards in Azure.
