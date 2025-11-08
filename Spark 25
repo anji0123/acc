@@ -1,0 +1,125 @@
+🔥 Apache Spark + PySpark Interview Questions (Real-Time, Banking-Focused)
+🟢 Section 1: Spark Fundamentals (1–10)
+🔹 1. What is Apache Spark and why did you choose it for banking ETL?
+Theory: Spark is a distributed computing engine for big data processing. Real-time POV: You chose Spark for parallel processing of 2M+ daily transactions, faster than traditional ETL tools.
+🔹 2. What is the difference between RDD and DataFrame?
+Theory:
+	• RDD: Low-level, type-safe, functional.
+	• DataFrame: High-level, optimized, SQL-like. Real-time POV: You use DataFrames for readability and performance in PySpark.
+🔹 3. What are transformations and actions in Spark?
+Theory:
+	• Transformations: Lazy operations (e.g., map, filter)
+	• Actions: Trigger execution (e.g., collect, count) Code:
+python
+df.filter("amount > 1000").count()
+🔹 4. What is lazy evaluation in Spark?
+Theory: Transformations are not executed until an action is called. Real-time POV: Improves performance by optimizing execution plan.
+🔹 5. How do you read data from ADLS in PySpark?
+Code:
+python
+df = spark.read.csv("abfss://raw@datalake.dfs.core.windows.net/transactions.csv", header=True)
+🔹 6. How do you write data to Delta Lake?
+Code:
+python
+df.write.format("delta").mode("append").save("/mnt/delta/transactions")
+🔹 7. How do you repartition data in Spark?
+Theory: Used to balance data across nodes. Code:
+python
+df = df.repartition(10, "customer_id")
+🔹 8. What is caching and when do you use it?
+Theory: Stores intermediate results in memory. Code:
+python
+df.cache()
+Real-time POV: Used when same DataFrame is reused across multiple steps.
+🔹 9. How do you handle nulls in PySpark?
+Code:
+python
+df = df.na.fill({"amount": 0})
+df = df.dropna(subset=["customer_id"])
+🔹 10. How do you cast column types?
+Code:
+python
+df = df.withColumn("amount", df["amount"].cast("double"))
+🟠 Section 2: Joins, Aggregations, and Business Logic (11–20)
+🔹 11. How do you join customer and transaction data?
+Code:
+python
+df_joined = df_txn.join(df_cust, "customer_id", "inner")
+🔹 12. How do you implement deduplication in PySpark?
+Code:
+python
+from pyspark.sql.window import Window
+from pyspark.sql.functions import row_number
+windowSpec = Window.partitionBy("txn_id").orderBy("timestamp")
+df = df.withColumn("rn", row_number().over(windowSpec)).filter("rn = 1")
+🔹 13. How do you calculate total spend per customer?
+Code:
+python
+df.groupBy("customer_id").agg({"amount": "sum"})
+🔹 14. How do you implement SCD Type 2 in PySpark?
+Code (simplified):
+python
+df_new = df_source.join(df_dim, "customer_id", "left_anti")
+df_new = df_new.withColumn("effective_date", current_date()).withColumn("end_date", lit("9999-12-31"))
+🔹 15. How do you handle late-arriving data?
+Theory: Use watermarking, upserts, and Delta Lake time travel.
+🔹 16. How do you implement idempotent logic in PySpark?
+Theory: Use MERGE INTO in Delta Lake to avoid duplicates.
+Code:
+python
+spark.sql("""
+MERGE INTO delta.transactions t
+USING staging s
+ON t.txn_id = s.txn_id
+WHEN MATCHED THEN UPDATE SET ...
+WHEN NOT MATCHED THEN INSERT ...
+""")
+🔹 17. How do you enrich transaction data with merchant info?
+Code:
+python
+df_enriched = df_txn.join(df_merchant, "merchant_id", "left")
+🔹 18. How do you calculate moving average of transaction amount?
+Code:
+python
+from pyspark.sql.window import Window
+from pyspark.sql.functions import avg
+windowSpec = Window.partitionBy("customer_id").orderBy("txn_date").rowsBetween(-2, 0)
+df = df.withColumn("moving_avg", avg("amount").over(windowSpec))
+🔹 19. How do you detect outliers in transaction amounts?
+Code:
+python
+from pyspark.sql.functions import mean, stddev
+stats = df.select(mean("amount"), stddev("amount")).collect()
+threshold = stats[0][0] + 3 * stats[0][1]
+df_outliers = df.filter(df["amount"] > threshold)
+🔹 20. How do you implement audit logging in PySpark?
+Code:
+python
+audit = spark.createDataFrame([("txn_pipeline", datetime.now(), df.count())], ["pipeline", "run_time", "row_count"])
+audit.write.mode("append").saveAsTable("audit_log")
+🔵 Section 3: Streaming, Optimization, and Delta Lake (21–30)
+🔹 21. How do you implement streaming ingestion in PySpark?
+Code:
+python
+df = spark.readStream.schema(schema).csv("/mnt/raw/stream/")
+🔹 22. How do you write streaming output to Delta Lake?
+Code:
+python
+df.writeStream.format("delta").option("checkpointLocation", "/mnt/chk").start("/mnt/delta/stream")
+🔹 23. How do you handle schema evolution in Delta Lake?
+Code:
+python
+df.write.option("mergeSchema", "true").format("delta").mode("append").save("/mnt/delta/transactions")
+🔹 24. How do you optimize joins in PySpark?
+Theory: Use broadcast joins for small dimension tables.
+Code:
+python
+from pyspark.sql.functions import broadcast
+df = df_txn.join(broadcast(df_dim), "customer_id")
+🔹 25. How do you debug a slow PySpark job?
+Checklist:
+	• Check shuffle size
+	• Repartition data
+	• Avoid wide transformations
+	• Use .explain() to view DAG
+	• Tune cluster size
