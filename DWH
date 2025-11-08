@@ -1,0 +1,221 @@
+Data Warehousing Interview Questions (Theory + SQL/PySpark Examples)
+🔹 1. What is the difference between OLTP and OLAP?
+Theory:
+	• OLTP (Online Transaction Processing): Handles day-to-day transactions (banking, retail). Optimized for inserts/updates.
+	• OLAP (Online Analytical Processing): Handles reporting and analytics. Optimized for queries and aggregations.
+Example:
+	• OLTP → Banking system recording deposits/withdrawals.
+	• OLAP → Dashboard showing monthly transaction trends.
+🔹 2. What is a Data Warehouse?
+Theory: A centralized repository for structured, historical data used for reporting and analytics. It integrates data from multiple sources (ERP, CRM, logs).
+SQL Example (fact table):
+sql
+CREATE TABLE fact_sales (
+  sale_id INT,
+  product_id INT,
+  customer_id INT,
+  sale_date DATE,
+  amount DECIMAL(10,2)
+);
+🔹 3. What are Fact and Dimension tables?
+Theory:
+	• Fact table: Contains measurable metrics (sales, transactions).
+	• Dimension table: Contains descriptive attributes (customer, product, time).
+SQL Example:
+sql
+-- Dimension
+CREATE TABLE dim_customer (
+  customer_id INT PRIMARY KEY,
+  name VARCHAR(100),
+  city VARCHAR(50)
+);
+-- Fact
+CREATE TABLE fact_sales (
+  sale_id INT,
+  customer_id INT,
+  amount DECIMAL(10,2),
+  FOREIGN KEY (customer_id) REFERENCES dim_customer(customer_id)
+);
+🔹 4. What are Slowly Changing Dimensions (SCDs)?
+Theory: Dimensions change over time (e.g., customer address).
+	• Type 1: Overwrite old data.
+	• Type 2: Add new row with effective dates.
+	• Type 3: Add new column for previous value.
+SQL Example (SCD Type 2):
+sql
+INSERT INTO dim_customer (customer_id, name, address, effective_date, end_date)
+VALUES (101, 'John', 'New Address', CURRENT_DATE, '9999-12-31');
+UPDATE dim_customer
+SET end_date = CURRENT_DATE
+WHERE customer_id = 101 AND end_date = '9999-12-31';
+🔹 5. What is a Star Schema vs Snowflake Schema?
+Theory:
+	• Star Schema: Fact table in center, dimensions around it. Simple, fast.
+	• Snowflake Schema: Dimensions normalized into sub-dimensions. More complex, saves space.
+Diagram POV:
+	• Star → fact_sales → dim_customer, dim_product, dim_time.
+	• Snowflake → dim_customer → dim_city → dim_country.
+🔹 6. What is a Data Mart?
+Theory: Subset of a data warehouse focused on a specific business area (e.g., Sales, HR). Helps faster reporting for departments.
+🔹 7. What is ETL vs ELT?
+Theory:
+	• ETL (Extract, Transform, Load): Transform before loading into warehouse.
+	• ELT (Extract, Load, Transform): Load raw data first, then transform inside warehouse (common in cloud DW like Snowflake, BigQuery).
+🔹 8. What is a Control Table in ETL?
+Theory: Tracks pipeline runs, last load time, row counts, errors. Used for incremental loads.
+SQL Example:
+sql
+CREATE TABLE control_table (
+  pipeline_name VARCHAR(50),
+  last_run_time TIMESTAMP,
+  row_count INT
+);
+🔹 9. What is Data Partitioning?
+Theory: Splitting large tables into smaller chunks (by date, region) for performance.
+SQL Example:
+sql
+CREATE TABLE transactions PARTITION BY RANGE (txn_date);
+🔹 10. What is Data Governance in Warehousing?
+Theory: Ensures data quality, security, lineage, compliance (GDPR, HIPAA). Includes metadata management and access control.
+🎯 Why This Matters for You
+	• You already have ETL + PySpark + Azure experience.
+	• These data warehousing concepts are the bridge between coding and enterprise design.
+	• Accenture interviewers will ask you to map your PySpark pipelines to DW concepts (e.g., “How do you implement SCD Type 2 in PySpark?”).
+👉 Next, I can expand this into Top 25 Data Warehousing Questions (with SQL + PySpark examples) so you’re fully covered.
+Would you like me to continue building that Data Warehousing set (Questions 51–75 overall) right now?
+yes
+Perfect, Anji 👌 — let’s now build the Data Warehousing Interview Guide (Top 25 Questions). This will be your next pillar after Python, covering OLAP, OLTP, dimensional modeling, SCDs, fact vs dimension tables, ETL/ELT, governance, partitioning, performance tuning — all explained with theory + SQL/PySpark examples so you can confidently answer at Accenture or any enterprise interview.
+✅ Data Warehousing Interview Questions (Top 25)
+🟢 Section 1: Fundamentals (1–5)
+🔹 1. What is the difference between OLTP and OLAP?
+Theory:
+	• OLTP (Online Transaction Processing): Handles day-to-day transactions, optimized for inserts/updates.
+	• OLAP (Online Analytical Processing): Handles reporting/analytics, optimized for queries/aggregations.
+Example:
+	• OLTP → Banking system recording deposits.
+	• OLAP → Dashboard showing monthly transaction trends.
+🔹 2. What is a Data Warehouse?
+Theory: A centralized repository for structured, historical data used for reporting and analytics. Integrates data from multiple sources (ERP, CRM, logs).
+SQL Example (fact table):
+sql
+CREATE TABLE fact_sales (
+  sale_id INT,
+  product_id INT,
+  customer_id INT,
+  sale_date DATE,
+  amount DECIMAL(10,2)
+);
+🔹 3. What are Fact and Dimension tables?
+Theory:
+	• Fact table: Contains measurable metrics (sales, transactions).
+	• Dimension table: Contains descriptive attributes (customer, product, time).
+SQL Example:
+sql
+CREATE TABLE dim_customer (
+  customer_id INT PRIMARY KEY,
+  name VARCHAR(100),
+  city VARCHAR(50)
+);
+CREATE TABLE fact_sales (
+  sale_id INT,
+  customer_id INT,
+  amount DECIMAL(10,2),
+  FOREIGN KEY (customer_id) REFERENCES dim_customer(customer_id)
+);
+🔹 4. What is a Star Schema vs Snowflake Schema?
+Theory:
+	• Star Schema: Fact table in center, dimensions around it. Simple, fast.
+	• Snowflake Schema: Dimensions normalized into sub-dimensions. More complex, saves space.
+🧠 Interview POV: Expect “Which one is better for reporting?” → Star schema.
+🔹 5. What is a Data Mart?
+Theory: Subset of a data warehouse focused on a specific business area (Sales, HR). Helps faster reporting for departments.
+🟠 Section 2: ETL & Modeling (6–15)
+🔹 6. What is ETL vs ELT?
+Theory:
+	• ETL (Extract, Transform, Load): Transform before loading.
+	• ELT (Extract, Load, Transform): Load raw data first, transform inside warehouse (common in cloud DW).
+🔹 7. What are Slowly Changing Dimensions (SCDs)?
+Theory:
+	• Type 1: Overwrite old data.
+	• Type 2: Add new row with effective dates.
+	• Type 3: Add new column for previous value.
+SQL Example (SCD Type 2):
+sql
+INSERT INTO dim_customer (customer_id, name, address, effective_date, end_date)
+VALUES (101, 'John', 'New Address', CURRENT_DATE, '9999-12-31');
+UPDATE dim_customer
+SET end_date = CURRENT_DATE
+WHERE customer_id = 101 AND end_date = '9999-12-31';
+🔹 8. What is a Control Table in ETL?
+Theory: Tracks pipeline runs, last load time, row counts, errors. Used for incremental loads.
+SQL Example:
+sql
+CREATE TABLE control_table (
+  pipeline_name VARCHAR(50),
+  last_run_time TIMESTAMP,
+  row_count INT
+);
+🔹 9. What is Data Partitioning?
+Theory: Splitting large tables into smaller chunks (by date, region) for performance.
+SQL Example:
+sql
+CREATE TABLE transactions PARTITION BY RANGE (txn_date);
+🔹 10. What is Data Aggregation?
+Theory: Summarizing data for reporting (sum, avg, count).
+SQL Example:
+sql
+SELECT customer_id, SUM(amount) AS total_spent
+FROM fact_sales
+GROUP BY customer_id;
+🔹 11. What is a Surrogate Key?
+Theory: System-generated unique ID used instead of natural keys. Simplifies joins.
+SQL Example:
+sql
+customer_sk INT IDENTITY(1,1) PRIMARY KEY
+🔹 12. What is a Composite Key?
+Theory: Combination of two or more columns to uniquely identify a row.
+SQL Example:
+sql
+PRIMARY KEY (order_id, product_id)
+🔹 13. What is Data Lineage?
+Theory: Tracking data flow from source → transformations → warehouse → reports. Helps in debugging and governance.
+🔹 14. What is a Staging Area?
+Theory: Temporary storage for raw data before transformation. Used to validate and clean before loading into warehouse.
+🔹 15. What is a Factless Fact Table?
+Theory: Fact table without measures, only foreign keys. Used to track events (e.g., student attendance).
+🔵 Section 3: Performance & Governance (16–25)
+🔹 16. What is Indexing in Warehousing?
+Theory: Improves query performance by creating lookup structures.
+SQL Example:
+sql
+CREATE INDEX idx_customer ON fact_sales(customer_id);
+🔹 17. What is Materialized View?
+Theory: Stores query results physically for faster access.
+SQL Example:
+sql
+CREATE MATERIALIZED VIEW monthly_sales AS
+SELECT DATE_TRUNC('month', sale_date) AS month, SUM(amount) AS total
+FROM fact_sales
+GROUP BY month;
+🔹 18. What is Data Governance?
+Theory: Ensures data quality, security, lineage, compliance (GDPR, HIPAA). Includes metadata management and access control.
+🔹 19. What is Data Quality in Warehousing?
+Theory: Ensuring accuracy, completeness, consistency, timeliness. Checks: nulls, duplicates, schema drift.
+SQL Example:
+sql
+SELECT COUNT(*) FROM fact_sales WHERE amount < 0 OR customer_id IS NULL;
+🔹 20. What is Data Archiving?
+Theory: Moving old data to cheaper storage while keeping recent data in warehouse. Improves performance and reduces cost.
+🔹 21. What is a Cube in OLAP?
+Theory: Multi-dimensional structure for fast aggregations (sales by product, region, time).
+🔹 22. What is Granularity in Fact Tables?
+Theory: Level of detail stored (transaction-level vs daily summary). Lower granularity = more detail, higher storage.
+🔹 23. What is Schema Drift?
+Theory: Unexpected changes in source schema (new columns, type changes). Handled with schema validation or dynamic ingestion.
+🔹 24. What is Idempotent ETL?
+Theory: ETL that can run multiple times without duplicating data. Implemented using MERGE or deduplication logic.
+🔹 25. What is Incremental Load?
+Theory: Loading only new/changed data since last run. Implemented using last_updated column or CDC (Change Data Capture).
+SQL Example:
+sql
+SELECT * FROM fact_sales WHERE last_updated > '2025-11-01';
