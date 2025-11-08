@@ -1,0 +1,311 @@
+🟢 Section 1: Core Python Basics (1–10)
+1. What are Python’s basic data types?
+Theory: int, float, str, bool, list, tuple, set, dict. Code:
+python
+x = 10; y = 3.14; name = "Anji"; flag = True
+items = [1,2,3]; tup = (1,2,3); s = {1,2,3}; d = {"id":101,"amount":250}
+🧠 Interview POV: Mutability differences often tested.
+2. Difference between list, tuple, and set?
+Theory: List = ordered/mutable, Tuple = ordered/immutable, Set = unordered/unique. Code:
+python
+my_list = [1,2,3]; my_tuple = (1,2,3); my_set = {1,2,3}
+🧠 Use case: Schema definitions, deduplication.
+3. How do you write a function in Python?
+Theory: Functions modularize code. Code:
+python
+def add(a,b): return a+b
+print(add(5,3))
+🧠 Interview POV: Expect follow-up on default args.
+4. What is a lambda function?
+Theory: Anonymous one-line function. Code:
+python
+square = lambda x: x*x
+print(square(4))
+🧠 Use case: Quick transformations.
+5. How do you handle exceptions?
+Theory: Use try-except-finally. Code:
+python
+try: val = int("abc")
+except ValueError: print("Invalid")
+finally: print("Done")
+🧠 Use case: ETL error handling.
+6. How do you read/write files?
+Code:
+python
+with open("data.txt","w") as f: f.write("Hello")
+with open("data.txt","r") as f: print(f.read())
+🧠 Use case: File ingestion.
+7. How do you work with JSON?
+Code:
+python
+import json
+data = '{"user_id":101,"amount":250}'
+parsed = json.loads(data)
+print(parsed["amount"])
+🧠 Use case: Configs, APIs.
+8. Difference between is and ==?
+Code:
+python
+a=[1,2]; b=[1,2]
+print(a==b) # True
+print(a is b) # False
+🧠 Classic trick question.
+9. What is list comprehension?
+Code:
+python
+squares = [x*x for x in range(5)]
+🧠 Use case: Clean transformations.
+10. How do you swap two numbers without temp?
+Code:
+python
+a,b=5,10; a,b=b,a
+🧠 Quick puzzle.
+🟠 Section 2: OOP & Advanced Python (11–20)
+11. What is OOP in Python?
+Code:
+python
+class Transaction:
+    def __init__(self,txn_id,amount):
+        self.txn_id=txn_id; self.amount=amount
+txn=Transaction(101,250); print(txn.amount)
+🧠 Interview POV: Expect __init__, inheritance.
+12. What is inheritance?
+Code:
+python
+class Transaction: pass
+class OnlineTransaction(Transaction): pass
+🧠 Use case: Extend ETL logic.
+13. What are decorators?
+Code:
+python
+def log_step(func):
+    def wrapper(*a,**k): print("Running"); return func(*a,**k)
+    return wrapper
+@log_step
+def extract(): print("Extracting")
+extract()
+🧠 Use case: Logging ETL steps.
+14. What are generators?
+Code:
+python
+def gen(): yield 1; yield 2
+for x in gen(): print(x)
+🧠 Use case: Streaming.
+15. Multithreading vs Multiprocessing?
+Code:
+python
+from multiprocessing import Pool
+def square(x): return x*x
+with Pool(4) as p: print(p.map(square,[1,2,3,4]))
+🧠 Use case: Speed up ETL.
+16. What is __name__ == "__main__"?
+Code:
+python
+if __name__=="__main__": print("Run ETL")
+🧠 Use case: Entry point.
+17. What is shallow vs deep copy?
+Code:
+python
+import copy
+a=[[1,2],[3,4]]
+b=copy.copy(a); c=copy.deepcopy(a)
+🧠 Use case: Avoid mutation bugs.
+18. What is context manager (with)?
+Code:
+python
+with open("file.txt") as f: print(f.read())
+🧠 Use case: Safe resource handling.
+19. What is __str__ method?
+Code:
+python
+class Txn: 
+  def __init__(self,id): self.id=id
+  def __str__(self): return f"Txn {self.id}"
+print(Txn(101))
+🧠 Use case: Debugging.
+20. How do you test Python code?
+Code:
+python
+import unittest
+class Test(unittest.TestCase):
+    def test_add(self): self.assertEqual(5+3,8)
+unittest.main()
+🧠 Use case: Validate ETL logic.
+🔵 Section 3: Pandas for Data Engineering (21–35)
+21. How do you create a DataFrame?
+python
+import pandas as pd
+df=pd.DataFrame({"id":[1,2],"amount":[100,200]})
+22. How do you filter rows?
+python
+df[df["amount"]>150]
+23. How do you aggregate data?
+python
+df.groupby("id")["amount"].sum()
+24. How do you remove duplicates?
+python
+df.drop_duplicates(subset=["id"],keep="last")
+25. How do you handle missing values?
+python
+df["amount"].fillna(0); df.dropna(subset=["id"])
+26. How do you merge DataFrames?
+python
+pd.merge(df1,df2,on="id",how="inner")
+27. How do you apply a function?
+python
+df["tax"]=df["amount"].apply(lambda x:x*0.18)
+28. How do you sort data?
+python
+df.sort_values("amount",ascending=False)
+29. How do you reset index?
+python
+df.reset_index(drop=True)
+30. How do you pivot data?
+python
+df.pivot_table(index="id",values="amount",aggfunc="sum")
+31. How do you read/write CSV?
+python
+df=pd.read_csv("file.csv"); df.to_csv("out.csv",index=False)
+32. How do you read/write Excel?
+python
+df=pd.read_excel("file.xlsx"); df.to_excel("out.xlsx")
+33. How do you check dtypes?
+python
+df.dtypes
+34. How do you convert column types?
+python
+df["amount"]=df["amount"].astype(float)
+35. How do you handle datetime?
+python
+df["date"]=pd.to_datetime(df["date"])
+🧠 Interview POV: These Pandas basics are always asked.
+🟣 Section 4: Famous Python Coding Puzzles (36–50)
+36. Reverse a string
+python
+s="DataEngineer"; print(s[::-1])
+37. Palindrome check
+python
+def is_pal(s): return s==s[::-1]
+38. Factorial recursion
+python
+def fact(n): return 1 if n==0 else n*fact(n-1)
+39. Fibonacci
+python
+a,b=0,1
+for _ in range(6): print(a); a,b=b,a+b
+40. Find duplicates in list
+python
+nums=[1,2,2,3];
+dont stoo
+Got it, Anji — let’s continue seamlessly and complete the Top 50 Python Interview Questions list. We already covered Core Python (1–10), OOP & Advanced (11–20), Pandas (21–35), and started Famous Coding Puzzles (36–50). Now I’ll finish the puzzles section with theory + code + interview POV for each, so you have the final consolidated set.
+🟣 Section 4: Famous Python Coding Puzzles (36–50)
+🔹 36. Reverse a string
+Theory: Strings can be reversed using slicing. Code:
+python
+s = "DataEngineer"
+print(s[::-1])  # reenignEataD
+🧠 Interview POV: Tests slicing knowledge.
+🔹 37. Palindrome check
+Theory: A palindrome reads the same forward and backward. Code:
+python
+def is_palindrome(s):
+    return s == s[::-1]
+print(is_palindrome("madam"))  # True
+🧠 Interview POV: Classic string problem.
+🔹 38. Factorial using recursion
+Theory: Recursion calls itself until base case. Code:
+python
+def factorial(n):
+    if n == 0: return 1
+    return n * factorial(n-1)
+print(factorial(5))  # 120
+🧠 Interview POV: Tests recursion basics.
+🔹 39. Fibonacci sequence
+Theory: Each number is sum of previous two. Code:
+python
+def fibonacci(n):
+    a, b = 0, 1
+    for _ in range(n):
+        print(a, end=" ")
+        a, b = b, a+b
+fibonacci(6)  # 0 1 1 2 3 5
+🧠 Interview POV: Common loop logic.
+🔹 40. Find duplicates in a list
+Theory: Use sets to track seen elements. Code:
+python
+nums = [1,2,3,2,4,1]
+duplicates = set([x for x in nums if nums.count(x) > 1])
+print(duplicates)  # {1,2}
+🧠 Interview POV: Tests list/set usage.
+🔹 41. Count frequency of elements
+Theory: Use collections.Counter. Code:
+python
+from collections import Counter
+nums = [1,2,2,3,3,3]
+print(Counter(nums))  # Counter({3:3,2:2,1:1})
+🧠 Interview POV: Very common.
+🔹 42. Find largest element in a list
+Theory: Use max() or loop. Code:
+python
+nums = [10,25,7,99]
+print(max(nums))  # 99
+🧠 Interview POV: Basic but expected.
+🔹 43. Find second largest element
+Code:
+python
+nums = [10,25,7,99]
+nums.sort()
+print(nums[-2])  # 25
+🧠 Interview POV: Classic puzzle.
+🔹 44. Reverse words in a sentence
+Code:
+python
+sentence = "I am a Data Engineer"
+print(" ".join(sentence.split()[::-1]))
+# Engineer Data a am I
+🧠 Interview POV: String manipulation.
+🔹 45. Check if two strings are anagrams
+Theory: Anagrams have same characters. Code:
+python
+def is_anagram(s1,s2):
+    return sorted(s1) == sorted(s2)
+print(is_anagram("listen","silent"))  # True
+🧠 Interview POV: Very popular.
+🔹 46. Prime numbers up to N
+Code:
+python
+def primes(n):
+    for i in range(2,n+1):
+        if all(i%j!=0 for j in range(2,int(i**0.5)+1)):
+            print(i,end=" ")
+primes(20)
+🧠 Interview POV: Tests loops + math.
+🔹 47. Flatten a nested list
+Code:
+python
+nested = [[1,2],[3,4],[5]]
+flat = [x for sub in nested for x in sub]
+print(flat)  # [1,2,3,4,5]
+🧠 Interview POV: Tests list comprehension.
+🔹 48. Find missing number in sequence
+Code:
+python
+nums = [1,2,4,5]
+missing = set(range(1,6)) - set(nums)
+print(missing)  # {3}
+🧠 Interview POV: Classic puzzle.
+🔹 49. Remove vowels from a string
+Code:
+python
+s = "DataEngineer"
+vowels = "aeiouAEIOU"
+print("".join([ch for ch in s if ch not in vowels]))
+# DtEngnr
+🧠 Interview POV: String filtering.
+🔹 50. Find common elements between two lists
+Code:
+python
+a = [1,2,3,4]
+b = [3,4,5,6]
+print(set(a) & set(b))  # {3,4}
+🧠 Interview POV: Tests set operations.
