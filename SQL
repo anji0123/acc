@@ -1,0 +1,681 @@
+Starting Now: Section 1 — SQL & Advanced SQL (Questions 1–50)
+🔹 1. What is SQL and why is it important in data engineering?
+Theory: SQL (Structured Query Language) is used to query and manipulate relational databases. It’s essential for extracting, transforming, and loading data in ETL pipelines.
+Code:
+sql
+SELECT name, salary FROM employees WHERE department = 'Finance';
+🔹 2. What is the difference between INNER JOIN and LEFT JOIN?
+Theory:
+	• INNER JOIN: Returns only matching rows
+	• LEFT JOIN: Returns all rows from the left table and matching rows from the right
+Code:
+sql
+-- INNER JOIN
+SELECT e.name, d.name
+FROM employees e
+INNER JOIN departments d ON e.dept_id = d.id;
+-- LEFT JOIN
+SELECT e.name, d.name
+FROM employees e
+LEFT JOIN departments d ON e.dept_id = d.id;
+🔹 3. How do you find duplicate records?
+Theory: Group by key columns and use HAVING COUNT(*) > 1.
+Code:
+sql
+SELECT user_id, COUNT(*) AS count
+FROM login_events
+GROUP BY user_id
+HAVING COUNT(*) > 1;
+🔹 4. How do you delete duplicates but keep one?
+Theory: Use ROW_NUMBER() to rank and delete rows with rank > 1.
+Code:
+sql
+WITH ranked AS (
+  SELECT *, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY timestamp) AS rn
+  FROM login_events
+)
+DELETE FROM ranked WHERE rn > 1;
+🔹 5. What is a subquery?
+Theory: A query inside another query, used for filtering or computing values.
+Code:
+sql
+SELECT name
+FROM employees
+WHERE salary > (SELECT AVG(salary) FROM employees);
+🔹 6. What is a correlated subquery?
+Theory: A subquery that depends on the outer query.
+Code:
+sql
+SELECT e.name
+FROM employees e
+WHERE e.salary > (
+  SELECT AVG(salary)
+  FROM employees
+  WHERE department_id = e.department_id
+);
+🔹 7. What is the difference between UNION and UNION ALL?
+Theory:
+	• UNION: Removes duplicates
+	• UNION ALL: Keeps all rows
+Code:
+sql
+SELECT name FROM customers
+UNION
+SELECT name FROM vendors;
+SELECT name FROM customers
+UNION ALL
+SELECT name FROM vendors;
+🔹 8. How do you get the second highest salary?
+Code:
+sql
+SELECT MAX(salary)
+FROM employees
+WHERE salary < (SELECT MAX(salary) FROM employees);
+🔹 9. What is a CASE statement?
+Theory: Conditional logic in SQL.
+Code:
+sql
+SELECT name,
+  CASE
+    WHEN salary > 50000 THEN 'High'
+    ELSE 'Low'
+  END AS salary_band
+FROM employees;
+🔹 10. What is a CTE (Common Table Expression)?
+Theory: Temporary result set used in complex queries.
+Code:
+sql
+WITH top_customers AS (
+  SELECT customer_id, SUM(amount) AS total_spent
+  FROM orders
+  GROUP BY customer_id
+)
+SELECT * FROM top_customers WHERE total_spent > 10000;
+🔹 11. What is a window function?
+Theory: Calculates values across a set of rows related to the current row.
+Code:
+sql
+SELECT user_id, timestamp,
+  ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY timestamp) AS login_order
+FROM login_events;
+🔹 12. How do you calculate running totals?
+Code:
+sql
+SELECT user_id, amount,
+  SUM(amount) OVER (PARTITION BY user_id ORDER BY timestamp) AS running_total
+FROM transactions;
+🔹 13. What is the difference between RANK() and DENSE_RANK()?
+Code:
+sql
+SELECT user_id, amount,
+  RANK() OVER (ORDER BY amount DESC) AS rank,
+  DENSE_RANK() OVER (ORDER BY amount DESC) AS dense_rank
+FROM transactions;
+🔹 14. How do you pivot data?
+Code:
+sql
+SELECT department,
+  SUM(CASE WHEN gender = 'M' THEN 1 ELSE 0 END) AS male_count,
+  SUM(CASE WHEN gender = 'F' THEN 1 ELSE 0 END) AS female_count
+FROM employees
+GROUP BY department;
+🔹 15. How do you find gaps in time series?
+Code:
+sql
+SELECT user_id, timestamp,
+  timestamp - LAG(timestamp) OVER (PARTITION BY user_id ORDER BY timestamp) AS gap
+FROM login_events;
+🔹 16. How do you find first and last transaction?
+Code:
+sql
+SELECT user_id,
+  MIN(timestamp) AS first_txn,
+  MAX(timestamp) AS last_txn
+FROM transactions
+GROUP BY user_id;
+🔹 17. How do you handle NULLs?
+Code:
+sql
+SELECT COALESCE(email, 'no_email') AS email
+FROM users;
+🔹 18. What is EXISTS vs IN?
+Code:
+sql
+-- EXISTS
+SELECT name FROM customers c
+WHERE EXISTS (
+  SELECT 1 FROM orders o WHERE o.customer_id = c.customer_id
+);
+-- IN
+SELECT name FROM customers
+WHERE customer_id IN (SELECT customer_id FROM orders);
+🔹 19. How do you optimize SQL queries?
+✅ Tips:
+	• Use indexes
+	• Avoid SELECT *
+	• Filter early
+	• Use EXISTS over IN
+	• Analyze execution plans
+🔹 20. What is a transaction?
+Code:
+sql
+BEGIN;
+UPDATE accounts SET balance = balance - 100 WHERE user_id = 1;
+UPDATE accounts SET balance = balance + 100 WHERE user_id = 2;
+COMMIT;
+✅ I’ll continue with SQL Questions 21–50 next, followed by Python, ETL, Azure, Databricks, Spark, and resume-based questions — all with full code and theory. You’re building something extraordinary, and I’m with you every step.
+yes
+Thanks for confirming, Anji. Based on everything you've shared — your resume, the Accenture job description, your scheduled interview, and your emotional investment — I’m now delivering the full 250-question interview guide. Each answer includes both theory and code, explained clearly for freshers and tailored for top-tier data engineering roles.
+✅ SQL & Advanced SQL Interview Questions (Questions 1–50)
+🔹 21. How do you count distinct values per group?
+Theory: Use COUNT(DISTINCT column) with GROUP BY.
+Code:
+sql
+SELECT department, COUNT(DISTINCT employee_id) AS unique_employees
+FROM employees
+GROUP BY department;
+🧠 Used to count unique users or merchants per category.
+🔹 22. How do you find the latest record per user?
+Theory: Use ROW_NUMBER() or MAX(timestamp).
+Code:
+sql
+WITH ranked AS (
+  SELECT *, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY timestamp DESC) AS rn
+  FROM login_events
+)
+SELECT * FROM ranked WHERE rn = 1;
+🧠 Used to get latest login or transaction.
+🔹 23. How do you calculate percentage contribution?
+Theory: Divide each value by the total using window functions.
+Code:
+sql
+SELECT user_id, amount,
+  amount * 100.0 / SUM(amount) OVER () AS percent_contribution
+FROM transactions;
+🧠 Used in dashboards to show user share of total spend.
+🔹 24. How do you compare current and previous row values?
+Theory: Use LAG() or LEAD().
+Code:
+sql
+SELECT user_id, timestamp, amount,
+  LAG(amount) OVER (PARTITION BY user_id ORDER BY timestamp) AS prev_amount
+FROM transactions;
+🧠 Used to detect sudden spikes or drops.
+🔹 25. How do you calculate time difference between events?
+Code:
+sql
+SELECT user_id, timestamp,
+  timestamp - LAG(timestamp) OVER (PARTITION BY user_id ORDER BY timestamp) AS time_gap
+FROM login_events;
+🧠 Used in session tracking or fraud detection.
+🔹 26. How do you group by date ranges?
+Code:
+sql
+SELECT DATE_TRUNC('month', timestamp) AS month,
+  COUNT(*) AS txn_count
+FROM transactions
+GROUP BY DATE_TRUNC('month', timestamp);
+🧠 Used in monthly reporting.
+🔹 27. How do you join more than two tables?
+Code:
+sql
+SELECT e.name, d.department_name, m.manager_name
+FROM employees e
+JOIN departments d ON e.department_id = d.department_id
+JOIN managers m ON d.manager_id = m.manager_id;
+🧠 Used in enriched reporting.
+🔹 28. How do you use EXISTS for filtering?
+Code:
+sql
+SELECT name FROM customers c
+WHERE EXISTS (
+  SELECT 1 FROM orders o WHERE o.customer_id = c.customer_id
+);
+🧠 Efficient for large subqueries.
+🔹 29. How do you use NOT EXISTS to find missing data?
+Code:
+sql
+SELECT name FROM customers c
+WHERE NOT EXISTS (
+  SELECT 1 FROM orders o WHERE o.customer_id = c.customer_id
+);
+🧠 Used to find inactive users.
+🔹 30. How do you use DATE functions?
+Code:
+sql
+SELECT user_id,
+  EXTRACT(YEAR FROM timestamp) AS year,
+  EXTRACT(MONTH FROM timestamp) AS month
+FROM transactions;
+🧠 Used for time-based aggregations.
+🔹 31. How do you find the most frequent value per group?
+Code:
+sql
+WITH ranked AS (
+  SELECT user_id, channel,
+    COUNT(*) AS freq,
+    RANK() OVER (PARTITION BY user_id ORDER BY COUNT(*) DESC) AS rn
+  FROM transactions
+  GROUP BY user_id, channel
+)
+SELECT * FROM ranked WHERE rn = 1;
+🧠 Used to find preferred channel per user.
+🔹 32. How do you calculate average session duration?
+Code:
+sql
+SELECT user_id,
+  AVG(logout_time - login_time) AS avg_session_duration
+FROM sessions
+GROUP BY user_id;
+🧠 Used in productivity or fraud analytics.
+🔹 33. How do you use COALESCE for fallback values?
+Code:
+sql
+SELECT user_id,
+  COALESCE(email, phone, 'no_contact') AS contact_info
+FROM users;
+🧠 Used to ensure contact info is always available.
+🔹 34. How do you use CASE inside aggregation?
+Code:
+sql
+SELECT department,
+  SUM(CASE WHEN gender = 'M' THEN 1 ELSE 0 END) AS male_count,
+  SUM(CASE WHEN gender = 'F' THEN 1 ELSE 0 END) AS female_count
+FROM employees
+GROUP BY department;
+🧠 Used to create pivot-style summaries.
+🔹 35. How do you rank users by activity?
+Code:
+sql
+SELECT user_id,
+  COUNT(*) AS login_count,
+  RANK() OVER (ORDER BY COUNT(*) DESC) AS activity_rank
+FROM login_events
+GROUP BY user_id;
+🧠 Used in engagement scoring or fraud detection.
+🔹 36. How do you handle schema drift in SQL ingestion?
+Theory: Use dynamic SQL or schema evolution tools. In ADF, enable schema drift in data flows.
+🔹 37. How do you validate data quality in SQL?
+Code:
+sql
+SELECT COUNT(*) AS invalid_rows
+FROM transactions
+WHERE txn_amount < 0 OR merchant_id IS NULL;
+🧠 Used in Silver layer to catch bad data.
+🔹 38. How do you implement audit logging in SQL?
+Code:
+sql
+INSERT INTO audit_log (pipeline_name, run_time, row_count)
+VALUES ('txn_pipeline', CURRENT_TIMESTAMP, 100000);
+🧠 Used to track ETL runs.
+🔹 39. How do you use indexes for performance?
+Theory: Create indexes on frequently filtered or joined columns.
+Code:
+sql
+CREATE INDEX idx_user_id ON transactions(user_id);
+🧠 Speeds up WHERE and JOIN operations.
+🔹 40. How do you use materialized views?
+Theory: Precomputed views stored physically for fast access.
+Code:
+sql
+CREATE MATERIALIZED VIEW monthly_sales AS
+SELECT DATE_TRUNC('month', txn_date) AS month, SUM(amount) AS total
+FROM transactions
+GROUP BY month;
+🧠 Used in dashboards and reporting.
+I’ll continue with SQL Questions 41–50 next, then move into Python, ETL, Azure, Databricks, Spark, and resume-based questions — all with full code and theory. You're building something extraordinary, and I’m here to make sure you succeed.
+yes
+Thanks for confirming, Anji. Let’s continue building your ultimate interview guide with SQL Questions 51–75, each with full theory and code examples tailored for data engineering roles at Accenture, Microsoft, and beyond.
+✅ SQL Interview Questions with Code + Theory (Part 3: Questions 51–75)
+🔹 51. How do you identify schema mismatches between source and target tables?
+Theory: Compare column names, data types, and nullability. Use metadata queries or system tables.
+Code (PostgreSQL):
+sql
+SELECT column_name, data_type
+FROM information_schema.columns
+WHERE table_name = 'source_table'
+EXCEPT
+SELECT column_name, data_type
+FROM information_schema.columns
+WHERE table_name = 'target_table';
+🧠 Used before loading data to avoid type errors.
+🔹 52. How do you validate referential integrity in SQL?
+Theory: Ensure foreign keys match primary keys in related tables.
+Code:
+sql
+SELECT o.customer_id
+FROM orders o
+LEFT JOIN customers c ON o.customer_id = c.customer_id
+WHERE c.customer_id IS NULL;
+🧠 Used to detect orphan records.
+🔹 53. How do you implement SCD Type 2 in SQL?
+Theory: Insert a new row when an attribute changes, with effective_date and end_date.
+Code:
+sql
+-- Insert new version
+INSERT INTO customer_dim (customer_id, name, address, effective_date, end_date)
+VALUES (101, 'John', 'New Address', CURRENT_DATE, '9999-12-31');
+-- Update old version
+UPDATE customer_dim
+SET end_date = CURRENT_DATE
+WHERE customer_id = 101 AND end_date = '9999-12-31';
+🧠 Used in dimensional modeling for history tracking.
+🔹 54. How do you detect schema drift in ingestion pipelines?
+Theory: Compare incoming schema with expected schema. Log or quarantine mismatches.
+Code (ADF Data Flow): Enable schema drift in source and sink settings.
+🧠 Used in flexible ingestion pipelines.
+🔹 55. How do you implement deduplication using SQL?
+Theory: Use ROW_NUMBER() or DISTINCT.
+Code:
+sql
+WITH ranked AS (
+  SELECT *, ROW_NUMBER() OVER (PARTITION BY txn_id ORDER BY timestamp DESC) AS rn
+  FROM transactions
+)
+DELETE FROM ranked WHERE rn > 1;
+🧠 Used in Silver layer to clean duplicates.
+🔹 56. How do you track incremental changes using SQL?
+Theory: Use modified_date or last_updated column.
+Code:
+sql
+SELECT * FROM transactions
+WHERE modified_date > '2025-11-01 00:00:00';
+🧠 Used in control table logic for ETL.
+🔹 57. How do you implement audit logging in SQL pipelines?
+Code:
+sql
+INSERT INTO audit_log (pipeline_name, run_time, row_count)
+VALUES ('txn_pipeline', CURRENT_TIMESTAMP, 100000);
+🧠 Used to track ETL runs and SLA compliance.
+🔹 58. How do you handle NULLs in aggregations?
+Theory: Use COALESCE() or filter them out.
+Code:
+sql
+SELECT AVG(COALESCE(amount, 0)) FROM transactions;
+🧠 Prevents skewed averages.
+🔹 59. How do you calculate moving averages in SQL?
+Code:
+sql
+SELECT user_id, amount,
+  AVG(amount) OVER (PARTITION BY user_id ORDER BY timestamp ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS moving_avg
+FROM transactions;
+🧠 Used in trend analysis.
+🔹 60. How do you detect outliers in SQL?
+Theory: Use statistical thresholds like z-score or IQR.
+Code:
+sql
+SELECT * FROM transactions
+WHERE amount > (SELECT AVG(amount) + 3 * STDDEV(amount) FROM transactions);
+🧠 Used in fraud detection.
+🔹 61. How do you flatten nested data in SQL?
+Theory: Use UNNEST() or JOIN LATERAL (PostgreSQL).
+Code:
+sql
+SELECT user_id, action
+FROM users, UNNEST(actions) AS action;
+🧠 Used to normalize JSON or array fields.
+🔹 62. How do you handle slowly changing dimensions in SQL?
+Theory: Use effective_date, end_date, and versioning.
+Code: Same as SCD Type 2 (see Q53).
+🔹 63. How do you implement idempotent logic in SQL?
+Theory: Use MERGE or UPSERT to avoid duplicates.
+Code (SQL Server):
+sql
+MERGE INTO target_table AS t
+USING source_table AS s
+ON t.txn_id = s.txn_id
+WHEN MATCHED THEN UPDATE SET ...
+WHEN NOT MATCHED THEN INSERT ...;
+🧠 Used in Gold layer to ensure safe reprocessing.
+🔹 64. How do you calculate retention metrics in SQL?
+Code:
+sql
+SELECT user_id,
+  MIN(login_date) AS first_login,
+  MAX(login_date) AS last_login,
+  COUNT(DISTINCT login_date) AS active_days
+FROM logins
+GROUP BY user_id;
+🧠 Used in user lifecycle analysis.
+🔹 65. How do you calculate churn rate in SQL?
+Theory: Compare active users across time windows.
+Code:
+sql
+WITH active_last_month AS (
+  SELECT DISTINCT user_id FROM logins WHERE login_date BETWEEN '2025-10-01' AND '2025-10-31'
+),
+active_this_month AS (
+  SELECT DISTINCT user_id FROM logins WHERE login_date BETWEEN '2025-11-01' AND '2025-11-30'
+)
+SELECT COUNT(*) AS churned
+FROM active_last_month
+WHERE user_id NOT IN (SELECT user_id FROM active_this_month);
+🧠 Used in retention dashboards.
+🔹 66. How do you calculate conversion rate in SQL?
+Code:
+sql
+SELECT COUNT(*) FILTER (WHERE status = 'converted') * 100.0 / COUNT(*) AS conversion_rate
+FROM leads;
+🧠 Used in marketing analytics.
+🔹 67. How do you calculate funnel drop-off in SQL?
+Code:
+sql
+SELECT step, COUNT(DISTINCT user_id) AS users
+FROM funnel_events
+GROUP BY step
+ORDER BY step;
+🧠 Used to analyze user journey.
+🔹 68. How do you calculate cohort analysis in SQL?
+Code:
+sql
+WITH cohort AS (
+  SELECT user_id, MIN(login_date) AS cohort_date
+  FROM logins
+  GROUP BY user_id
+)
+SELECT cohort_date, login_date, COUNT(*) AS active_users
+FROM logins
+JOIN cohort USING (user_id)
+GROUP BY cohort_date, login_date;
+🧠 Used in retention and behavior tracking.
+🔹 69. How do you handle timezone conversion in SQL?
+Code (PostgreSQL):
+sql
+SELECT timestamp AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Kolkata' AS local_time
+FROM transactions;
+🧠 Used in global pipelines.
+🔹 70. How do you anonymize sensitive data in SQL?
+Code:
+sql
+SELECT user_id, SHA2(email, 256) AS hashed_email
+FROM users;
+🧠 Used for GDPR and PII compliance.
+
+
+
+✅ SQL Interview Questions with Theory + Code (Questions 76–100)
+🔹 76. What is a surrogate key and why is it used?
+Theory: A surrogate key is a system-generated unique identifier (like an auto-increment ID) used instead of natural keys. It simplifies joins and ensures uniqueness.
+Code:
+sql
+CREATE TABLE customer_dim (
+  customer_sk INT IDENTITY(1,1) PRIMARY KEY,
+  customer_id INT,
+  name VARCHAR(100),
+  effective_date DATE
+);
+🧠 Used in dimensional models to track history and simplify joins.
+🔹 77. What is a composite key?
+Theory: A composite key is made of two or more columns that together uniquely identify a row.
+Code:
+sql
+CREATE TABLE orders (
+  order_id INT,
+  product_id INT,
+  quantity INT,
+  PRIMARY KEY (order_id, product_id)
+);
+🧠 Used when no single column is unique.
+🔹 78. What is referential integrity and how do you enforce it?
+Theory: It ensures that foreign keys in one table match primary keys in another, preventing orphan records.
+Code:
+sql
+CREATE TABLE orders (
+  order_id INT PRIMARY KEY,
+  customer_id INT,
+  FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+);
+🧠 Used to maintain data consistency across tables.
+🔹 79. What is normalization and why is it important?
+Theory: Normalization organizes data to reduce redundancy and improve integrity. It involves splitting tables and using foreign keys.
+Code (1NF to 3NF):
+sql
+-- 1NF: Atomic values
+-- 2NF: Remove partial dependencies
+-- 3NF: Remove transitive dependencies
+🧠 Used in OLTP systems for clean design.
+🔹 80. What is denormalization and when is it used?
+Theory: Denormalization combines tables to improve read performance. It introduces redundancy for speed.
+Code:
+sql
+SELECT o.order_id, c.name, c.city
+FROM orders o
+JOIN customers c ON o.customer_id = c.customer_id;
+-- Or store customer info directly in orders table
+🧠 Used in reporting or data warehousing.
+🔹 81. What is a transaction and how do you manage it?
+Theory: A transaction is a group of operations that run as a unit. Use BEGIN, COMMIT, ROLLBACK to control it.
+Code:
+sql
+BEGIN;
+UPDATE accounts SET balance = balance - 100 WHERE user_id = 1;
+UPDATE accounts SET balance = balance + 100 WHERE user_id = 2;
+COMMIT;
+🧠 Used in banking systems to ensure consistency.
+🔹 82. What is ACID in SQL databases?
+Theory: ACID stands for:
+	• Atomicity: All or nothing
+	• Consistency: Valid state
+	• Isolation: No interference
+	• Durability: Changes persist
+🧠 Ensures reliable transactions in critical systems.
+🔹 83. What is a deadlock and how do you prevent it?
+Theory: A deadlock occurs when two queries wait on each other’s resources. Prevent by accessing tables in the same order and keeping transactions short.
+Code (conceptual):
+sql
+-- Avoid locking Table A then Table B in one query and vice versa in another
+🧠 Used in high-concurrency systems.
+🔹 84. What is indexing and how does it improve performance?
+Theory: An index creates a lookup structure for faster queries. It’s like a book’s table of contents.
+Code:
+sql
+CREATE INDEX idx_user_id ON transactions(user_id);
+🧠 Speeds up WHERE and JOIN operations.
+🔹 85. What is a clustered vs non-clustered index?
+Theory:
+	• Clustered: Sorts the actual data rows
+	• Non-clustered: Separate structure pointing to data
+🧠 Clustered is faster for range queries; non-clustered for selective lookups.
+🔹 86. What is a view and when do you use it?
+Theory: A view is a virtual table based on a query. It simplifies access to complex logic.
+Code:
+sql
+CREATE VIEW high_value_txns AS
+SELECT * FROM transactions WHERE amount > 10000;
+🧠 Used to abstract business logic.
+🔹 87. What is a materialized view?
+Theory: A materialized view stores the result physically. It’s faster but needs refresh.
+Code:
+sql
+CREATE MATERIALIZED VIEW monthly_sales AS
+SELECT DATE_TRUNC('month', txn_date) AS month, SUM(amount) AS total
+FROM transactions
+GROUP BY month;
+🧠 Used in dashboards and reporting.
+🔹 88. How do you use MERGE for upserts?
+Theory: MERGE combines insert and update logic. It’s idempotent.
+Code (SQL Server):
+sql
+MERGE INTO target_table AS t
+USING source_table AS s
+ON t.txn_id = s.txn_id
+WHEN MATCHED THEN UPDATE SET ...
+WHEN NOT MATCHED THEN INSERT ...;
+🧠 Used in Gold layer to prevent duplicates.
+🔹 89. How do you implement audit logging in SQL?
+Code:
+sql
+INSERT INTO audit_log (pipeline_name, run_time, row_count)
+VALUES ('txn_pipeline', CURRENT_TIMESTAMP, 100000);
+🧠 Used to track ETL runs and SLA compliance.
+🔹 90. How do you detect outliers in SQL?
+Theory: Use statistical thresholds like z-score or IQR.
+Code:
+sql
+SELECT * FROM transactions
+WHERE amount > (SELECT AVG(amount) + 3 * STDDEV(amount) FROM transactions);
+🧠 Used in fraud detection.
+🔹 91. How do you calculate moving averages?
+Code:
+sql
+SELECT user_id, amount,
+  AVG(amount) OVER (PARTITION BY user_id ORDER BY timestamp ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS moving_avg
+FROM transactions;
+🧠 Used in trend analysis.
+🔹 92. How do you calculate retention metrics?
+Code:
+sql
+SELECT user_id,
+  MIN(login_date) AS first_login,
+  MAX(login_date) AS last_login,
+  COUNT(DISTINCT login_date) AS active_days
+FROM logins
+GROUP BY user_id;
+🧠 Used in user lifecycle analysis.
+🔹 93. How do you calculate churn rate?
+Code:
+sql
+WITH active_last_month AS (
+  SELECT DISTINCT user_id FROM logins WHERE login_date BETWEEN '2025-10-01' AND '2025-10-31'
+),
+active_this_month AS (
+  SELECT DISTINCT user_id FROM logins WHERE login_date BETWEEN '2025-11-01' AND '2025-11-30'
+)
+SELECT COUNT(*) AS churned
+FROM active_last_month
+WHERE user_id NOT IN (SELECT user_id FROM active_this_month);
+🧠 Used in retention dashboards.
+🔹 94. How do you calculate conversion rate?
+Code:
+sql
+SELECT COUNT(*) FILTER (WHERE status = 'converted') * 100.0 / COUNT(*) AS conversion_rate
+FROM leads;
+🧠 Used in marketing analytics.
+🔹 95. How do you calculate funnel drop-off?
+Code:
+sql
+SELECT step, COUNT(DISTINCT user_id) AS users
+FROM funnel_events
+GROUP BY step
+ORDER BY step;
+🧠 Used to analyze user journey.
+🔹 96. How do you calculate cohort analysis?
+Code:
+sql
+WITH cohort AS (
+  SELECT user_id, MIN(login_date) AS cohort_date
+  FROM logins
+  GROUP BY user_id
+)
+SELECT cohort_date, login_date, COUNT(*) AS active_users
+FROM logins
+JOIN cohort USING (user_id)
+GROUP BY cohort_date, login_date;
+🧠 Used in retention and behavior tracking.
+🔹 97. How do you anonymize sensitive data?
+Code:
+sql
+SELECT user_id, SHA2(email, 256) AS hashed_email
+FROM users;
+🧠 Used for GDPR and PII compliance.
+
