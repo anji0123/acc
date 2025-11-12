@@ -1,0 +1,49 @@
+Name the pipe line as incremental load
+copy activity - 
+source - ds_param folderlevel - linked service -     open dataset and edit parameters - add paramters (just names- p_container and P folder ) and now we need to add this parameters created dynamically and pass (file system - @dataset().p_container --> directory (@dataset().p.folder() --> filename)
+
+come out of dataset and in source we need to give values for those parameters 
+P_container = source
+p_folder = raw_gold_data
+
+in sink 
+P_container = source
+p_folder = raw_gold_data
+
+
+filter by last modified : then use utc starttime 
+wild card paths ----> -------/-----/*.csv
+
+
+get metadata activity
+chooose dataset - param folderlevel once it is created we don’t need to do this ----  ((((open dataset and edit parameters - add paramters (just names- p_container and P folder ) and now we need to add this parameters created dynamically and pass (file system - @dataset().p_container --> directory ))))(@dataset().p.folder() --> filename)
+
+
+
+P_container = source 
+p_folder = raw_gold_data
+Field list = child items 
+
+bring foreach and add parameter that the output of get metadata activity is fed here 
+@activity….childitems
+
+again inside foreach bring 
+get metadata activity
+
+P_container = source 
+p_folder = raw_gold_data
+pfile = (if we are doing parameter in loop then it shows item(). Name))
+Field list = lastmodified , argument 
+
+chooose dataset - param filelevel ( new datset) so we need to give al these again   ((((open dataset and edit parameters - add paramters (just names- p_container and P folder ) and now we need to add this parameters created dynamically and pass (file system - @dataset().p_container --> directory ))))(@dataset().p.folder() --> filename)
+
+on canvas we need to set variables and pass them at run time same like parameters 
+temp_max_value --------string----------- here we declare a value for that again we need get metadata acivity and set variable activity and pass those variables like this here 
+max value -------------string -------------
+
+
+file path
+  
+
+
+destination
